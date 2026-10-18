@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
-import { resumeOrCreateSession, sendTurn, uploadMaterial } from './api';
+import { getStats, resumeOrCreateSession, sendTurn, uploadMaterial, type Stats } from './api';
 import Chat from './components/Chat';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
@@ -44,6 +44,7 @@ export default function App() {
   const [materialBusy, setMaterialBusy] = useState(false);
   const [materialError, setMaterialError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('chat');
+  const [stats, setStats] = useState<Stats | null>(null);
   const isDesktop = useIsDesktop();
 
   useEffect(() => {
@@ -58,6 +59,11 @@ export default function App() {
       })
       .catch((e) => setChatError(e?.message ?? 'No pude conectar con el servidor.'));
   }, []);
+
+  // Contador publico de uso: se refresca al cargar y al cerrar cada turno.
+  useEffect(() => {
+    getStats().then(setStats).catch(() => {});
+  }, [metrics.turnos]);
 
   function applyDelta(delta: GraphDelta) {
     setGraph((g) => {
@@ -186,8 +192,16 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-zinc-200 bg-white px-4 py-2 text-center text-[11px] text-zinc-500">
-        Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
+      <footer className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t border-zinc-200 bg-white px-4 py-2 text-center text-[11px] text-zinc-500">
+        <span>
+          Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
+        </span>
+        {stats && stats.sesionesConTurnos > 0 && (
+          <span className="text-zinc-400">
+            · {stats.sesionesConTurnos} estudiantes ya conversaron aquí, {stats.turnos} veces, y
+            conectaron {stats.nodos} ideas.
+          </span>
+        )}
       </footer>
     </div>
   );

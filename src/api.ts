@@ -36,6 +36,18 @@ export function resumeOrCreateSession(): Promise<SessionSnapshot> {
   return inFlight;
 }
 
+export interface Stats {
+  sesiones: number;
+  sesionesConTurnos: number;
+  turnos: number;
+  nodos: number;
+  persistencia: string;
+}
+
+export async function getStats(): Promise<Stats> {
+  return (await jsonOrThrow(await fetch('/api/stats'))) as Stats;
+}
+
 export interface MaterialResult {
   summary: string;
   materialName: string;

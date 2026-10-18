@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Mic, Send, Square, Volume2 } from 'lucide-react';
 import type { ChatMessage } from '../../shared/types';
+import { dictationSupported, ttsSupported, useDictation, useReadAloud } from '../speech';
 
 export default function Chat({
   messages,
@@ -24,6 +25,16 @@ export default function Chat({
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages]);
 
+  // El dictado agrega lo que vas diciendo al final de lo que ya escribiste.
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const dictado = useDictation((texto) =>
+    setDraft((draftRef.current ? draftRef.current.trimEnd() + ' ' : '') + texto),
+  );
+  const voz = useReadAloud();
+  const puedeDictar = dictationSupported();
+  const puedeLeer = ttsSupported();
+
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <h2 className="text-sm font-semibold text-zinc-700">Conversación</h2>
@@ -36,7 +47,10 @@ export default function Chat({
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+          <div
+            key={i}
+            className={m.role === 'user' ? 'flex justify-end' : 'flex items-end justify-start gap-1'}
+          >
             <div
               className={
                 m.role === 'user'
@@ -55,20 +69,44 @@ export default function Chat({
                   ''
                 ))}
             </div>
+            {m.role === 'assistant' && puedeLeer && m.content && (
+              <button
+                onClick={() => voz.speak(i, m.content)}
+                title={voz.speakingId === i ? 'Detener' : 'Leer en voz alta'}
+                aria-label={voz.speakingId === i ? 'Detener la lectura' : 'Leer en voz alta'}
+                className={`shrink-0 rounded-full p-1.5 ring-1 ring-zinc-200 ${
+                  voz.speakingId === i ? 'bg-amber-100 text-amber-700' : 'bg-white text-zinc-400'
+                }`}
+              >
+                {voz.speakingId === i ? (
+                  <Square className="h-3.5 w-3.5" />
+                ) : (
+                  <Volume2 className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
           </div>
         ))}
         <div ref={endRef} />
       </div>
 
-      {error && (
+      {(error || dictado.error) && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">
-          {error}
+          {error ?? dictado.error}
+        </p>
+      )}
+
+      {dictado.listening && (
+        <p className="flex items-center gap-2 text-xs text-zinc-500">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+          Te escucho… {dictado.interim}
         </p>
       )}
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (dictado.listening) dictado.stop();
           onSubmit();
         }}
         className="flex items-end gap-2"
@@ -79,6 +117,7 @@ export default function Chat({
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
+              if (dictado.listening) dictado.stop();
               onSubmit();
             }
           }}
@@ -87,6 +126,22 @@ export default function Chat({
           disabled={disabled || streaming}
           className="max-h-32 flex-1 resize-none rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900"
         />
+        {puedeDictar && (
+          <button
+            type="button"
+            onClick={dictado.toggle}
+            disabled={disabled || streaming}
+            aria-label={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
+            title={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
+            className={`rounded-xl p-2.5 ring-1 disabled:opacity-40 ${
+              dictado.listening
+                ? 'bg-red-600 text-white ring-red-600'
+                : 'bg-white text-zinc-600 ring-zinc-300'
+            }`}
+          >
+            <Mic className="h-5 w-5" />
+          </button>
+        )}
         <button
           type="submit"
           disabled={disabled || streaming || !draft.trim()}
