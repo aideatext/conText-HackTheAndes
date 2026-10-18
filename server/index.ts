@@ -10,6 +10,7 @@ import { computeMetrics, mergeDelta, normalizeDelta, sesionExportadaSchema } fro
 import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
+import { contrato, entradaSchema, extraerGrafo, guardia, qatomEnabled } from './qatom.js';
 import {
   deleteSession,
   getSession,
@@ -61,7 +62,13 @@ async function start() {
   });
 
   app.get('/healthz', (_req, res) => {
-    res.json({ ok: true, model: MODEL, voz: voiceEnabled, uptime: Math.round(process.uptime()) });
+    res.json({
+      ok: true,
+      model: MODEL,
+      voz: voiceEnabled,
+      qatom: qatomEnabled,
+      uptime: Math.round(process.uptime()),
+    });
   });
 
   const vozLimiter = rateLimit({
@@ -91,6 +98,38 @@ async function start() {
 
   app.get('/api/stats', async (_req, res) => {
     res.json(await stats());
+  });
+
+  /**
+   * ── Lo que conText vende en Qatom ──────────────────────────────────
+   * El escaparate es publico; la mercancia, solo para quien pago.
+   */
+  app.get('/api/qatom/contrato', (_req, res) => {
+    res.json({ ...contrato, disponible: qatomEnabled });
+  });
+
+  const qatomLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 60,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+  });
+
+  app.post('/api/qatom/grafo', qatomLimiter, guardia, async (req, res) => {
+    const parsed = entradaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(422).json({
+        error: 'Entrada inválida',
+        detalle: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+      });
+    }
+    try {
+      const grafo = await extraerGrafo(parsed.data.texto, parsed.data.nodosExistentes);
+      res.json(grafo);
+    } catch (err) {
+      console.error('[qatom]', err);
+      res.status(502).json({ error: 'No se pudo analizar el texto. Intenta de nuevo.' });
+    }
   });
 
   app.post('/api/session', (_req, res) => {
