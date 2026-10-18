@@ -6,7 +6,7 @@ vino del material y qué construyó él.**
 
 Hack the Andes 2026 · Track 03 (Educación Escolar) · Claude Opus 5 en Azure AI Foundry
 
-🔗 **App:** https://context-aideatext.orangebeach-65ac7e2c.eastus.azurecontainerapps.io
+🔗 **App: https://context.aideatext.ai**
 📊 **Uso real:** `/api/stats` · ❤️ **Salud:** `/healthz`
 
 ---
@@ -145,6 +145,26 @@ az role assignment create --assignee $p --role "Cognitive Services User"       -
 az role assignment create --assignee $p --role "Storage Table Data Contributor" --scope <id-del-storage>
 az role assignment create --assignee $p --role "AcrPull"                        --scope <id-del-registro>
 ```
+
+### Dominio propio
+
+En el DNS (aquí Cloudflare, `aideatext.ai`), **con el proxy desactivado** — en modo proxy el CNAME
+resuelve a IPs de Cloudflare, Azure no valida el dominio y además el stream SSE del chat se puede
+bufferear:
+
+| Tipo | Nombre | Contenido |
+|---|---|---|
+| `CNAME` | `context` | `<app>.<entorno>.eastus.azurecontainerapps.io` |
+| `TXT` | `asuid.context` | el `customDomainVerificationId` del Container App |
+
+```powershell
+az containerapp hostname add  -n context-aideatext -g rg-context-hackandes --hostname context.aideatext.ai
+az containerapp hostname bind -n context-aideatext -g rg-context-hackandes --hostname context.aideatext.ai `
+  --environment context-aideatext-env --validation-method CNAME   # certificado gestionado, gratis
+```
+
+Si el dominio tiene registros CAA, deben permitir a `digicert.com`, que es quien emite el
+certificado gestionado de Azure.
 
 ## 7. Origen
 
