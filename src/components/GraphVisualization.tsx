@@ -98,12 +98,33 @@ export default function GraphVisualization({
     }
 
     const g = svg.append('g');
-    svg.call(
-      d3
-        .zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.2, 4])
-        .on('zoom', (event) => g.attr('transform', event.transform)),
-    );
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.15, 4])
+      .on('zoom', (event) => g.attr('transform', event.transform));
+    svg.call(zoom);
+
+    /** Encuadra todo el grafo: si no, las ideas nuevas quedan fuera de la vista. */
+    let usuarioMovioLaVista = false;
+    svg.on('wheel.fit mousedown.fit touchstart.fit', () => {
+      usuarioMovioLaVista = true;
+    });
+    const encuadrar = (nodos: SimNode[]) => {
+      if (usuarioMovioLaVista || nodos.length === 0) return;
+      const xs = nodos.map((n) => n.x ?? 0);
+      const ys = nodos.map((n) => n.y ?? 0);
+      const margen = 60;
+      const x0 = Math.min(...xs) - margen;
+      const x1 = Math.max(...xs) + margen;
+      const y0 = Math.min(...ys) - margen;
+      const y1 = Math.max(...ys) + margen;
+      const escala = Math.min(3, Math.max(0.15, 0.95 / Math.max((x1 - x0) / width, (y1 - y0) / height)));
+      const t = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(escala)
+        .translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+      svg.transition().duration(500).call(zoom.transform, t);
+    };
 
     const visible = onlyMine
       ? graph.nodes.filter((n) => n.origin === 'estudiante')
@@ -213,9 +234,13 @@ export default function GraphVisualization({
       for (const n of nodes) {
         if (n.x != null && n.y != null) positions.current.set(n.id, { x: n.x, y: n.y });
       }
+      encuadrar(nodes);
     });
+    // Por si la simulacion tarda en enfriarse, encuadramos tambien a medio camino.
+    const encuadreTemprano = setTimeout(() => encuadrar(nodes), 1200);
 
     return () => {
+      clearTimeout(encuadreTemprano);
       for (const n of nodes) {
         if (n.x != null && n.y != null) positions.current.set(n.id, { x: n.x, y: n.y });
       }
