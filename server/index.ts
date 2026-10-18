@@ -9,6 +9,7 @@ import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta } from './graph.js';
 import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
 import { loadMaterial, saveMaterial } from './blob.js';
+import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
 import { getSession, newSession, persist, snapshot, stats } from './store.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -47,7 +48,32 @@ async function start() {
   });
 
   app.get('/healthz', (_req, res) => {
-    res.json({ ok: true, model: MODEL, uptime: Math.round(process.uptime()) });
+    res.json({ ok: true, model: MODEL, voz: voiceEnabled, uptime: Math.round(process.uptime()) });
+  });
+
+  const vozLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    limit: 80,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Demasiadas peticiones de voz seguidas.' },
+  });
+
+  /** Voz del tutor. Si falla, 503 y el navegador usa su propia voz. */
+  app.post('/api/voz', vozLimiter, async (req, res) => {
+    const texto = req.body?.text;
+    if (typeof texto !== 'string' || !texto.trim()) {
+      return res.status(400).json({ error: 'Falta el texto.' });
+    }
+    try {
+      const audio = await synthesize(texto);
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'private, max-age=600');
+      res.send(audio);
+    } catch (err) {
+      if (!(err instanceof VoiceUnavailable)) console.error('[voz]', err);
+      res.status(503).json({ error: 'La voz no esta disponible ahora.' });
+    }
   });
 
   app.get('/api/stats', async (_req, res) => {

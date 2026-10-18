@@ -86,37 +86,82 @@ export function useDictation(onText: (text: string) => void) {
 
 export const ttsSupported = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-/** Lee un texto en voz alta en español. */
+/** Voz del sistema: el respaldo si Azure Speech no responde. */
+function hablarConElNavegador(text: string, onEnd: () => void): boolean {
+  if (!ttsSupported()) return false;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'es-PE';
+  const es = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith('es'));
+  if (es) u.voice = es;
+  u.onend = onEnd;
+  u.onerror = onEnd;
+  window.speechSynthesis.speak(u);
+  return true;
+}
+
+/**
+ * Lee la respuesta del tutor. Primero con la voz neuronal peruana de Azure
+ * (servida por el servidor, sin claves); si no esta disponible, con la del navegador.
+ */
 export function useReadAloud() {
   const [speakingId, setSpeakingId] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Si Azure falla una vez, dejamos de intentarlo durante esta sesion.
+  const azureCaido = useRef(false);
 
   const stop = useCallback(() => {
     window.speechSynthesis?.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
     setSpeakingId(null);
   }, []);
 
   const speak = useCallback(
-    (id: number, text: string) => {
-      if (!ttsSupported() || !text.trim()) return;
-      window.speechSynthesis.cancel();
-      if (speakingId === id) {
-        setSpeakingId(null);
-        return;
-      }
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'es-PE';
-      u.rate = 1;
-      const es = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith('es'));
-      if (es) u.voice = es;
-      u.onend = () => setSpeakingId(null);
-      u.onerror = () => setSpeakingId(null);
+    async (id: number, text: string) => {
+      const yaSonaba = speakingId === id;
+      stop();
+      if (yaSonaba || !text.trim()) return;
+
       setSpeakingId(id);
-      window.speechSynthesis.speak(u);
+
+      if (!azureCaido.current) {
+        try {
+          const res = await fetch('/api/voz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+          });
+          if (res.ok) {
+            const url = URL.createObjectURL(await res.blob());
+            const audio = new Audio(url);
+            audioRef.current = audio;
+            const limpiar = () => {
+              URL.revokeObjectURL(url);
+              setSpeakingId((actual) => (actual === id ? null : actual));
+            };
+            audio.onended = limpiar;
+            audio.onerror = limpiar;
+            await audio.play();
+            return;
+          }
+          azureCaido.current = true;
+        } catch {
+          azureCaido.current = true;
+        }
+      }
+
+      if (!hablarConElNavegador(text, () => setSpeakingId((a) => (a === id ? null : a)))) {
+        setSpeakingId(null);
+      }
     },
-    [speakingId],
+    [speakingId, stop],
   );
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => stop, [stop]);
 
   return { speakingId, speak, stop };
 }

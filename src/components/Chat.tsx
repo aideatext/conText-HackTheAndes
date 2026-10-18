@@ -46,11 +46,44 @@ export default function Chat({
   );
   const voz = useReadAloud();
   const puedeDictar = dictationSupported();
-  const puedeLeer = ttsSupported();
+  // Aunque el navegador no tenga voz propia, Azure Speech puede leer igual.
+  const puedeLeer = ttsSupported() || true;
+
+  // Al terminar un turno, el tutor lee su respuesta si la voz esta activada.
+  const [vozAuto, setVozAuto] = useState(false);
+  const ultimoLeido = useRef(-1);
+  useEffect(() => {
+    if (!vozAuto || streaming) return;
+    const i = messages.length - 1;
+    const ultimo = messages[i];
+    if (!ultimo || ultimo.role !== 'assistant' || !ultimo.content.trim()) return;
+    if (ultimoLeido.current === i) return;
+    ultimoLeido.current = i;
+    void voz.speak(i, ultimo.content);
+    // voz.speak cambia de identidad en cada render: no es una dependencia util aqui.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vozAuto, streaming, messages]);
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
-      <h2 className="text-sm font-semibold text-zinc-700">Conversación</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-zinc-700">Conversación</h2>
+        {puedeLeer && (
+          <label className="flex cursor-pointer items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium ring-1 ring-zinc-200">
+            <input
+              type="checkbox"
+              checked={vozAuto}
+              onChange={(e) => {
+                setVozAuto(e.target.checked);
+                if (!e.target.checked) voz.stop();
+              }}
+              className="accent-amber-600"
+            />
+            <Volume2 className="h-3.5 w-3.5" />
+            El tutor habla
+          </label>
+        )}
+      </div>
 
       {material && (
         <button
