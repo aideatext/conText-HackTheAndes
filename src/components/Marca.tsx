@@ -17,19 +17,20 @@ export function Marca() {
         alt="AIdeaText"
         className="h-10 w-10 shrink-0 sm:h-11 sm:w-11"
       />
-      <div className="min-w-0">
-        <h1 className="titular text-lg leading-none tracking-tight sm:text-xl">conText</h1>
-        <p className="mt-0.5 truncate text-xs text-tinta-suave">
-          Piensa tus ideas en voz alta y míralas conectarse.
-        </p>
-      </div>
+      {/* Las dos credenciales van juntas: la leyenda no las separa. */}
       <img
         src="/img/nvidia-inception-color.svg"
         width={500}
         height={216}
         alt="NVIDIA Inception"
-        className="ml-1 hidden h-9 w-auto shrink-0 sm:block"
+        className="hidden h-9 w-auto shrink-0 sm:block"
       />
+      <div className="min-w-0 sm:border-l sm:border-borde sm:pl-3">
+        <h1 className="titular text-lg leading-none tracking-tight sm:text-xl">conText</h1>
+        <p className="mt-0.5 truncate text-xs text-tinta-suave">
+          Piensa tus ideas en voz alta y míralas conectarse.
+        </p>
+      </div>
     </div>
   );
 }
