@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Download, Loader2 } from 'lucide-react';
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
 import { getStats, resumeOrCreateSession, sendTurn, uploadMaterial, type Stats } from './api';
+import { exportarPdf } from './export';
 import Chat from './components/Chat';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
@@ -48,6 +50,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('chat');
   const [stats, setStats] = useState<Stats | null>(null);
   const isDesktop = useIsDesktop();
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     resumeOrCreateSession()
@@ -161,7 +165,27 @@ export default function App() {
       }
     />
   );
-  const grafo = <GraphPanel graph={graph} metrics={metrics} />;
+  const grafo = <GraphPanel graph={graph} metrics={metrics} svgRef={svgRef} />;
+
+  async function descargarResumen() {
+    setExportando(true);
+    try {
+      await exportarPdf({
+        graph,
+        metrics,
+        messages,
+        summary,
+        materialName,
+        materialUrl,
+        materialMime,
+        svg: svgRef.current,
+      });
+    } catch (e: any) {
+      setChatError('No pude armar el PDF. Intenta de nuevo.');
+    } finally {
+      setExportando(false);
+    }
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -172,9 +196,23 @@ export default function App() {
             Piensa tus ideas en voz alta y míralas conectarse.
           </p>
         </div>
-        <span className="hidden text-xs text-zinc-400 sm:block">
-          Hack the Andes · Claude en Azure AI Foundry
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-xs text-zinc-400 lg:block">
+            Hack the Andes · Claude en Azure AI Foundry
+          </span>
+          <button
+            onClick={descargarResumen}
+            disabled={exportando || (graph.nodes.length === 0 && messages.length === 0)}
+            className="flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-40"
+          >
+            {exportando ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            Llevarme mi resumen
+          </button>
+        </div>
       </header>
 
       {!isDesktop && (

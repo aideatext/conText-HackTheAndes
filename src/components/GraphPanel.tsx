@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Download, Image as ImageIcon } from 'lucide-react';
 import type { Graph, Metrics, Origin } from '../../shared/types';
 import GraphVisualization, { ORIGIN_COLOR, ORIGIN_LABEL } from './GraphVisualization';
+import { svgAPng } from '../export';
 import MetricsPanel from './MetricsPanel';
 
 function download(blob: Blob, filename: string) {
@@ -13,42 +14,16 @@ function download(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-/** Rasteriza el SVG a PNG sin librerias extra. */
-async function exportPng(svg: SVGSVGElement) {
-  const clone = svg.cloneNode(true) as SVGSVGElement;
-  const width = svg.clientWidth || 800;
-  const height = svg.clientHeight || 600;
-  clone.setAttribute('width', String(width));
-  clone.setAttribute('height', String(height));
-  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  bg.setAttribute('width', '100%');
-  bg.setAttribute('height', '100%');
-  bg.setAttribute('fill', '#ffffff');
-  clone.insertBefore(bg, clone.firstChild);
-
-  const source = new XMLSerializer().serializeToString(clone);
-  const img = new Image();
-  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(source)));
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-
-  const scale = 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-  const ctx = canvas.getContext('2d')!;
-  ctx.scale(scale, scale);
-  ctx.drawImage(img, 0, 0);
-  canvas.toBlob((blob) => blob && download(blob, 'mi-grafo-context.png'));
-}
-
-export default function GraphPanel({ graph, metrics }: { graph: Graph; metrics: Metrics }) {
+export default function GraphPanel({
+  graph,
+  metrics,
+  svgRef,
+}: {
+  graph: Graph;
+  metrics: Metrics;
+  svgRef: React.RefObject<SVGSVGElement | null>;
+}) {
   const [onlyMine, setOnlyMine] = useState(false);
-  const svgRef = useRef<SVGSVGElement>(null);
 
   const empty = graph.nodes.length === 0;
 
@@ -80,7 +55,11 @@ export default function GraphPanel({ graph, metrics }: { graph: Graph; metrics: 
             <Download className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={() => svgRef.current && exportPng(svgRef.current)}
+            onClick={async () => {
+              if (!svgRef.current) return;
+              const png = await svgAPng(svgRef.current);
+              if (png) download(new Blob([png as BlobPart], { type: 'image/png' }), 'mi-grafo-context.png');
+            }}
             disabled={empty}
             title="Descargar el grafo como imagen PNG"
             className="rounded-full bg-zinc-100 p-2 ring-1 ring-zinc-200 disabled:opacity-40"
