@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AIdeaText">
+  <!--
+    La MARCA de AIdeaText, no el logotipo completo.
+
+    El logotipo —`/img/logo-aideatext.png`, el que va en la cabecera—
+    lleva la palabra «AIdeaText» escrita dentro de los círculos. A 16 y a
+    32 píxeles, que es donde vive un favicon (la pestaña, el marcador, la
+    rejilla de «más visitados»), esa palabra no se lee: se convierte en
+    una mancha gris que no distingue este sitio de ningún otro. Lo que sí
+    se lee a ese tamaño son los dos círculos, el punto y el anillo. Es lo
+    que hay aquí, y es una decisión, no un recorte por comodidad.
+
+    ⚠️ LAS PROPORCIONES NO ESTÁN INVENTADAS. Salen de medir
+    `Logo_300x300.png` —el archivo de marca— sobre su lienzo de 300 px:
+
+      · los tres discos, por el recuadro de sus píxeles de color;
+      · el anillo, resolviendo la circunferencia que pasa por su tangente
+        superior (y = 57, punto medio x = 157,5) y por un punto de su arco
+        izquierdo (77, 200): centro (157,5 · 151,2), radio 94,2.
+
+    Y las relaciones que se conservan aquí son las del archivo, no unas
+    parecidas:
+
+      | pieza  | radio ÷ radio del anillo | dónde cae                  |
+      |--------|--------------------------|----------------------------|
+      | rojo   | 0,605                    | dentro del anillo          |
+      | azul   | 0,372                    | a caballo sobre el anillo  |
+      | punto  | 0,260                    | a caballo sobre el anillo  |
+
+    «A caballo» es lo que hace que la marca no se lea como tres discos
+    sueltos: los dos azules cortan la línea. Si alguien reencuadra esto,
+    eso es lo que no puede perderse.
+
+    Lo único que se reencuadra es el AIRE: el logotipo deja margen
+    alrededor de la palabra, y un favicon no se lo puede permitir. El
+    conjunto se escala para llenar 60 de los 64 y se centra.
+
+    Lo único que NO es la medida es el grosor del anillo. En el archivo
+    mide unos 4 px de 300, que escalados aquí serían 1,0 — y a 16 px de
+    pantalla eso es un cuarto de píxel: el anillo desaparecía justo en el
+    tamaño para el que existe este archivo. Va a 1,7. Es una corrección
+    óptica, y se dice.
+
+    Sin fondo, a propósito: así una pestaña clara y una oscura enseñan el
+    mismo icono y el navegador pone el suyo detrás.
+
+    El rojo va en degradado porque en el logotipo lo va: el muestreo del
+    archivo da #ee324b hacia el centro-alto y #ae0025 en el borde, que es
+    además el rojo de marca. Aplanarlo a #ae0025 dejaba una marca
+    visiblemente más apagada que la del archivo.
+  -->
+  <defs>
+    <radialGradient id="rojo" cx="38%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#ee324b"/>
+      <stop offset="1" stop-color="#ae0025"/>
+    </radialGradient>
+  </defs>
+  <circle cx="33.39" cy="32.00" r="23.74" fill="none" stroke="#12161d" stroke-width="1.7"/>
+  <circle cx="33.39" cy="34.61" r="14.37" fill="url(#rojo)"/>
+  <circle cx="10.82" cy="19.86" r="8.82" fill="#0b7ec5"/>
+  <circle cx="55.82" cy="47.09" r="6.18" fill="#0b7ec5"/>
+</svg>

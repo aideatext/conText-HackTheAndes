@@ -1,8 +1,73 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+/* ── Las letras, servidas desde este dominio ──────────────────────────
+ *
+ * Ni una peticion a Google Fonts, igual que en aideatext.ai: asi la CSP
+ * del servidor puede ser 'self' a secas y el navegador no filtra a quien
+ * visita conText hacia un tercero. Los archivos estan en public/fonts/,
+ * en woff2, subconjunto latino. Fraunces e IBM Plex son SIL OFL y sus
+ * licencias viajan al lado de los archivos, que es lo que la OFL pide.
+ *
+ * font-display: swap — el texto se lee desde el primer momento con la
+ * letra del sistema y cambia cuando llega la de verdad.
+ */
+@font-face {
+  font-family: 'Fraunces Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(/fonts/fraunces-latin-wght-normal.woff2) format('woff2-variations');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(/fonts/ibm-plex-sans-latin-400-normal.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url(/fonts/ibm-plex-sans-latin-600-normal.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2');
+}
+
+/* ── La paleta de AIdeaText ───────────────────────────────────────────
+ *
+ * Tomada tal cual de aideatext.ai (web/public/css/portada.css), no
+ * aproximada a ojo. El papel es calido y nunca blanco puro; la tinta
+ * lleva dentro el azul del logotipo; el azul y el rojo son los dos
+ * colores del logotipo —AIdea en azul, Text en rojo— y por eso son los
+ * que el grafo usa para distinguir quien dijo cada idea.
+ */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-papel: #fbf8f3;
+  --color-panel: #f2eee6;
+  --color-tinta: #16202b;
+  --color-tinta-suave: #4e5a68;
+  --color-azul: #0b7ec5;
+  --color-azul-hondo: #0a5c92;
+  --color-azul-claro: #5aa9e6;
+  --color-rojo: #ae0025;
+  --color-borde: #e5dfd4;
+  --color-tenue: #cdd6df;
+  --color-lienzo: #101924;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Fraunces Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --radius-chico: 0.625rem;
+  --radius-medio: 0.875rem;
+  --radius-grande: 1.25rem;
 }
 
 @layer base {
@@ -12,10 +77,25 @@
     height: 100%;
   }
   body {
-    @apply bg-zinc-50 text-zinc-900 font-sans antialiased;
+    @apply bg-papel text-tinta font-sans antialiased;
+  }
+  /* El foco visible se nota sobre el papel calido, no desaparece. */
+  :focus-visible {
+    outline: 2px solid var(--color-azul);
+    outline-offset: 2px;
   }
 }
 
-.glass {
-  @apply bg-white/80 backdrop-blur-md border border-zinc-200/80 shadow-sm;
+/* El titulo y los rotulos de seccion llevan la serif del sitio. */
+.titular {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Las cifras de los indicadores, en monoespaciada: se comparan en columna. */
+.cifra {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }

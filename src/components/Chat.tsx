@@ -67,9 +67,9 @@ export default function Chat({
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-zinc-700">Conversación</h2>
+        <h2 className="titular text-base text-tinta">Conversación</h2>
         {puedeLeer && (
-          <label className="flex cursor-pointer items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium ring-1 ring-zinc-200">
+          <label className="flex cursor-pointer items-center gap-1.5 rounded-full bg-panel px-2.5 py-1 text-xs font-medium ring-1 ring-borde">
             <input
               type="checkbox"
               checked={vozAuto}
@@ -77,7 +77,7 @@ export default function Chat({
                 setVozAuto(e.target.checked);
                 if (!e.target.checked) voz.stop();
               }}
-              className="accent-amber-600"
+              className="accent-rojo"
             />
             <Volume2 className="h-3.5 w-3.5" />
             El tutor habla
@@ -89,15 +89,15 @@ export default function Chat({
         <button
           onClick={() => setMaterialAbierto((v) => !v)}
           aria-expanded={materialAbierto}
-          className="shrink-0 overflow-hidden rounded-xl bg-white text-left ring-1 ring-zinc-200"
+          className="shrink-0 overflow-hidden rounded-medio bg-white text-left ring-1 ring-borde"
         >
           <div className="flex items-center gap-2 px-3 py-2">
-            <ImageIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <span className="flex-1 truncate text-xs text-zinc-600">
+            <ImageIcon className="h-3.5 w-3.5 shrink-0 text-tinta-suave/70" />
+            <span className="flex-1 truncate text-xs text-tinta-suave">
               {material.nombre ?? 'Tu material'}
             </span>
             <ChevronDown
-              className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform ${
+              className={`h-3.5 w-3.5 shrink-0 text-tinta-suave/70 transition-transform ${
                 materialAbierto ? 'rotate-180' : ''
               }`}
             />
@@ -115,9 +115,9 @@ export default function Chat({
         </button>
       )}
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4 ring-1 ring-zinc-200">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-medio bg-white p-4 ring-1 ring-borde">
         {messages.length === 0 && (
-          <div className="space-y-2 text-sm text-zinc-400">
+          <div className="space-y-2 text-sm text-tinta-suave/70">
             <p>Cuéntame qué estás estudiando y empezamos.</p>
             <p>Si subes una foto de tu cuaderno, conversamos sobre eso.</p>
           </div>
@@ -128,18 +128,19 @@ export default function Chat({
             className={m.role === 'user' ? 'flex justify-end' : 'flex items-end justify-start gap-1'}
           >
             <div
+              data-mensaje={m.role}
               className={
                 m.role === 'user'
-                  ? 'max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-900 px-4 py-2 text-sm whitespace-pre-wrap text-white'
-                  : 'max-w-[90%] rounded-2xl rounded-bl-sm bg-zinc-100 px-4 py-2 text-sm whitespace-pre-wrap text-zinc-900'
+                  ? 'max-w-[85%] rounded-grande rounded-br-sm bg-tinta px-4 py-2 text-sm whitespace-pre-wrap text-white'
+                  : 'max-w-[90%] rounded-grande rounded-bl-sm bg-panel px-4 py-2 text-sm whitespace-pre-wrap text-tinta'
               }
             >
               {m.content ||
                 (streaming && i === messages.length - 1 ? (
                   <span className="inline-flex gap-1">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:120ms]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:240ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-tinta-suave/60" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-tinta-suave/60 [animation-delay:120ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-tinta-suave/60 [animation-delay:240ms]" />
                   </span>
                 ) : (
                   ''
@@ -150,8 +151,8 @@ export default function Chat({
                 onClick={() => voz.speak(i, m.content)}
                 title={voz.speakingId === i ? 'Detener' : 'Leer en voz alta'}
                 aria-label={voz.speakingId === i ? 'Detener la lectura' : 'Leer en voz alta'}
-                className={`shrink-0 rounded-full p-1.5 ring-1 ring-zinc-200 ${
-                  voz.speakingId === i ? 'bg-amber-100 text-amber-700' : 'bg-white text-zinc-400'
+                className={`shrink-0 rounded-full p-1.5 ring-1 ring-borde ${
+                  voz.speakingId === i ? 'bg-rojo/10 text-rojo' : 'bg-white text-tinta-suave/70'
                 }`}
               >
                 {voz.speakingId === i ? (
@@ -167,13 +168,13 @@ export default function Chat({
       </div>
 
       {(error || dictado.error) && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">
+        <p className="rounded-chico bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">
           {error ?? dictado.error}
         </p>
       )}
 
       {dictado.listening && (
-        <p className="flex items-center gap-2 text-xs text-zinc-500">
+        <p className="flex items-center gap-2 text-xs text-tinta-suave">
           <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
           Te escucho… {dictado.interim}
         </p>
@@ -200,7 +201,7 @@ export default function Chat({
           rows={1}
           placeholder={disabled ? 'Conectando…' : 'Escribe tu mensaje…'}
           disabled={disabled || streaming}
-          className="max-h-32 flex-1 resize-none rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-zinc-900"
+          className="max-h-32 flex-1 resize-none rounded-medio border border-borde px-4 py-2.5 text-sm outline-none focus:border-azul"
         />
         {puedeDictar && (
           <button
@@ -209,10 +210,10 @@ export default function Chat({
             disabled={disabled || streaming}
             aria-label={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
             title={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
-            className={`rounded-xl p-2.5 ring-1 disabled:opacity-40 ${
+            className={`rounded-medio p-2.5 ring-1 disabled:opacity-40 ${
               dictado.listening
                 ? 'bg-red-600 text-white ring-red-600'
-                : 'bg-white text-zinc-600 ring-zinc-300'
+                : 'bg-white text-tinta-suave ring-borde'
             }`}
           >
             <Mic className="h-5 w-5" />
@@ -222,7 +223,7 @@ export default function Chat({
           type="submit"
           disabled={disabled || streaming || !draft.trim()}
           aria-label="Enviar"
-          className="rounded-xl bg-zinc-900 p-2.5 text-white disabled:opacity-40"
+          className="rounded-medio bg-tinta p-2.5 text-white disabled:opacity-40"
         >
           {streaming ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         </button>

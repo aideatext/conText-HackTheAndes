@@ -71,27 +71,27 @@ export default function MaterialPreview({
       <img
         src={url}
         alt={nombre ? `Material: ${nombre}` : 'Material que subiste'}
-        className={`w-full rounded-lg object-contain ring-1 ring-zinc-200 ${className}`}
+        className={`w-full rounded-chico object-contain ring-1 ring-borde ${className}`}
       />
     );
   }
 
   if (esPdf) {
     return (
-      <div className={`relative overflow-hidden rounded-lg bg-white ring-1 ring-zinc-200 ${className}`}>
+      <div className={`relative overflow-hidden rounded-chico bg-white ring-1 ring-borde ${className}`}>
         <canvas ref={canvasRef} className="block w-full" />
         {estado === 'cargando' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <div className="absolute inset-0 flex items-center justify-center bg-papel/90">
+            <Loader2 className="h-5 w-5 animate-spin text-tinta-suave/70" />
           </div>
         )}
         {estado === 'error' && (
-          <div className="flex items-center gap-2 p-4 text-xs text-zinc-500">
+          <div className="flex items-center gap-2 p-4 text-xs text-tinta-suave">
             <FileText className="h-4 w-4" /> No pude dibujar la primera página.
           </div>
         )}
         {estado === 'listo' && (
-          <span className="absolute right-1 bottom-1 rounded bg-white/90 px-1.5 py-0.5 text-[10px] text-zinc-500 ring-1 ring-zinc-200">
+          <span className="absolute right-1 bottom-1 rounded bg-papel/90 px-1.5 py-0.5 text-[10px] text-tinta-suave ring-1 ring-borde">
             página 1
           </span>
         )}
@@ -102,7 +102,7 @@ export default function MaterialPreview({
   // Texto plano: no hay nada que dibujar.
   return (
     <div
-      className={`flex items-center gap-2 rounded-lg bg-zinc-50 p-3 text-xs text-zinc-500 ring-1 ring-zinc-200 ${className}`}
+      className={`flex items-center gap-2 rounded-chico bg-panel p-3 text-xs text-tinta-suave ring-1 ring-borde ${className}`}
     >
       <FileText className="h-4 w-4 shrink-0" />
       <span className="truncate">{nombre ?? 'Texto'}</span>

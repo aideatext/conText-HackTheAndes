@@ -91,7 +91,7 @@ async function run(name, contextOptions, { mobile }) {
     [...new Set(els.map((e) => e.getAttribute('stroke')))],
   );
   check(
-    colores.length === 1 && colores[0] === '#2563eb',
+    colores.length === 1 && colores[0] === '#0b7ec5',
     `${name}: los nodos filtrados son todos del estudiante (${colores.join(', ')})`,
   );
   await page.getByText('Mis conexiones').click();
@@ -103,7 +103,7 @@ async function run(name, contextOptions, { mobile }) {
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);
   if (mobile) await page.getByRole('button', { name: 'Conversación' }).click();
-  const mensajes = await page.locator('.rounded-2xl').count();
+  const mensajes = await page.locator('[data-mensaje]').count();
   check(mensajes >= 4, `${name}: al recargar vuelven ${mensajes} mensajes`);
   if (mobile) await page.getByRole('button', { name: 'Grafo', exact: true }).click();
   await page.waitForTimeout(800);

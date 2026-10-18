@@ -6,10 +6,16 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import type { Graph, GraphLink, GraphNode, NodeType, Origin } from '../../shared/types';
 
+/**
+ * Los tres origenes, con la paleta de AIdeaText. El azul y el rojo son los
+ * dos colores del logotipo —AIdea en azul, Text en rojo— y aqui separan al
+ * estudiante del tutor; el material queda en tinta suave, que es el color
+ * de lo que ya estaba escrito.
+ */
 export const ORIGIN_COLOR: Record<Origin, string> = {
-  material: '#64748b', // pizarra: lo que vino del archivo
-  estudiante: '#2563eb', // azul: lo que construyo el estudiante
-  tutor: '#d97706', // ambar: lo que introdujo el tutor
+  material: '#4e5a68', // tinta suave
+  estudiante: '#0b7ec5', // azul del logotipo
+  tutor: '#ae0025', // rojo del logotipo
 };
 
 export const ORIGIN_LABEL: Record<Origin, string> = {
@@ -213,7 +219,7 @@ export default function GraphVisualization({
       .attr('text-anchor', 'middle')
       .attr('font-size', '11px')
       .attr('font-weight', '600')
-      .attr('fill', '#18181b')
+      .attr('fill', '#16202b')
       .attr('paint-order', 'stroke')
       .attr('stroke', 'white')
       .attr('stroke-width', 3)

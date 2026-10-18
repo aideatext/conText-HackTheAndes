@@ -4,6 +4,7 @@ import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '.
 import { getStats, resumeOrCreateSession, sendTurn, uploadMaterial, type Stats } from './api';
 import { exportarPdf } from './export';
 import Chat from './components/Chat';
+import { AvisoNvidia, Marca } from './components/Marca';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
 
@@ -189,40 +190,37 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-3">
-        <div>
-          <h1 className="text-lg leading-tight font-bold tracking-tight">conText</h1>
-          <p className="text-xs text-zinc-500">
-            Piensa tus ideas en voz alta y míralas conectarse.
-          </p>
-        </div>
+      <header className="flex items-center justify-between gap-3 border-b border-borde bg-papel px-4 py-3">
+        <Marca />
         <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-zinc-400 lg:block">
+          <span className="hidden text-xs text-tinta-suave xl:block">
             Hack the Andes · Claude en Azure AI Foundry
           </span>
           <button
             onClick={descargarResumen}
             disabled={exportando || (graph.nodes.length === 0 && messages.length === 0)}
-            className="flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-40"
+            className="flex shrink-0 items-center gap-1.5 rounded-medio bg-azul px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-azul-hondo disabled:opacity-40"
           >
             {exportando ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Download className="h-3.5 w-3.5" />
+              <Download className="h-4 w-4" />
             )}
-            Llevarme mi resumen
+            {/* En un telefono el rotulo no cabe al lado de la marca: queda el icono. */}
+            <span className="hidden sm:inline">Llevarme mi resumen</span>
+            <span className="sr-only sm:hidden">Llevarme mi resumen</span>
           </button>
         </div>
       </header>
 
       {!isDesktop && (
-        <nav className="flex border-b border-zinc-200 bg-white">
+        <nav className="flex border-b border-borde bg-papel">
           {(['material', 'chat', 'grafo'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-sm font-medium ${
-                tab === t ? 'border-b-2 border-zinc-900 text-zinc-900' : 'text-zinc-400'
+                tab === t ? 'border-b-2 border-azul text-tinta' : 'text-tinta-suave'
               }`}
             >
               {t === 'chat' ? 'Conversación' : t === 'grafo' ? 'Grafo' : 'Material'}
@@ -245,16 +243,30 @@ export default function App() {
         )}
       </main>
 
-      <footer className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t border-zinc-200 bg-white px-4 py-2 text-center text-[11px] text-zinc-500">
-        <span>
-          Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
-        </span>
-        {stats && stats.sesionesConTurnos > 0 && (
-          <span className="text-zinc-400">
-            · {stats.sesionesConTurnos} estudiantes ya conversaron aquí, {stats.turnos} veces, y
-            conectaron {stats.nodos} ideas.
+      <footer className="border-t border-borde bg-panel px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-[11px] text-tinta-suave">
+          <span>
+            Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
           </span>
-        )}
+          {stats && stats.sesionesConTurnos > 0 && (
+            <span className="text-tinta-suave/80">
+              · {stats.sesionesConTurnos} estudiantes ya conversaron aquí, {stats.turnos} veces, y
+              conectaron {stats.nodos} ideas.
+            </span>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center justify-center gap-2">
+          <img
+            src="/img/nvidia-inception-color.svg"
+            width={500}
+            height={216}
+            alt="NVIDIA Inception"
+            className="h-7 w-auto sm:hidden"
+          />
+        </div>
+        <div className="mt-1.5 text-center">
+          <AvisoNvidia />
+        </div>
       </footer>
     </div>
   );

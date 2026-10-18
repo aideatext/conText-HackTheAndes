@@ -26,11 +26,16 @@ async function start() {
             directives: {
               defaultSrc: ["'self'"],
               scriptSrc: ["'self'"],
-              styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-              fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+              // Las letras se sirven desde este dominio (public/fonts), asi que
+              // no hay que abrirle la puerta a Google Fonts: nadie que visite
+              // conText es filtrado hacia un tercero.
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              fontSrc: ["'self'", 'data:'],
               imgSrc: ["'self'", 'data:', 'blob:'],
               connectSrc: ["'self'"],
               objectSrc: ["'none'"],
+              mediaSrc: ["'self'", 'blob:'],
+              workerSrc: ["'self'", 'blob:'],
             },
           }
         : false,

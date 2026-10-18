@@ -30,14 +30,14 @@ export default function GraphPanel({
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-zinc-700">Tus ideas conectadas</h2>
+        <h2 className="titular text-base text-tinta">Tus ideas conectadas</h2>
         <div className="flex items-center gap-2">
-          <label className="flex cursor-pointer items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium ring-1 ring-zinc-200">
+          <label className="flex cursor-pointer items-center gap-2 rounded-full bg-panel px-3 py-1.5 text-xs font-medium ring-1 ring-borde">
             <input
               type="checkbox"
               checked={onlyMine}
               onChange={(e) => setOnlyMine(e.target.checked)}
-              className="accent-blue-600"
+              className="accent-azul"
             />
             Mis conexiones
           </label>
@@ -50,7 +50,7 @@ export default function GraphPanel({
             }
             disabled={empty}
             title="Descargar el grafo como JSON"
-            className="rounded-full bg-zinc-100 p-2 ring-1 ring-zinc-200 disabled:opacity-40"
+            className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
           </button>
@@ -62,16 +62,16 @@ export default function GraphPanel({
             }}
             disabled={empty}
             title="Descargar el grafo como imagen PNG"
-            className="rounded-full bg-zinc-100 p-2 ring-1 ring-zinc-200 disabled:opacity-40"
+            className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
           >
             <ImageIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-white ring-1 ring-zinc-200">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-medio bg-white ring-1 ring-borde">
         {empty ? (
-          <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-zinc-400">
+          <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-tinta-suave/70">
             Aquí vas a ver, en vivo, las ideas que conectes mientras conversas.
           </p>
         ) : (
@@ -83,7 +83,7 @@ export default function GraphPanel({
             {(Object.keys(ORIGIN_COLOR) as Origin[]).map((o) => (
               <span
                 key={o}
-                className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 ring-1 ring-zinc-200"
+                className="flex items-center gap-1 rounded-full bg-papel/90 px-2 py-0.5 ring-1 ring-borde"
               >
                 <span
                   className="h-2 w-2 rounded-full"

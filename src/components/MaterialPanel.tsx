@@ -33,7 +33,7 @@ export default function MaterialPanel({
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
-      <h2 className="text-sm font-semibold text-zinc-700">Tu material</h2>
+      <h2 className="titular text-base text-tinta">Tu material</h2>
 
       <div
         onDragOver={(e) => {
@@ -46,30 +46,30 @@ export default function MaterialPanel({
           setDragging(false);
           handle(e.dataTransfer.files?.[0]);
         }}
-        className={`rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
-          dragging ? 'border-blue-500 bg-blue-50' : 'border-zinc-300 bg-white'
+        className={`rounded-medio border-2 border-dashed p-5 text-center transition-colors ${
+          dragging ? 'border-azul bg-azul/10' : 'border-borde bg-white'
         }`}
       >
         {busy ? (
-          <div className="flex flex-col items-center gap-2 text-sm text-zinc-500">
+          <div className="flex flex-col items-center gap-2 text-sm text-tinta-suave">
             <Loader2 className="h-6 w-6 animate-spin" />
             Leyendo tu material…
           </div>
         ) : (
           <>
-            <Upload className="mx-auto h-6 w-6 text-zinc-400" />
-            <p className="mt-2 text-sm text-zinc-600">Arrastra una foto, un PDF o un .txt</p>
-            <p className="text-xs text-zinc-400">Hasta 10 MB</p>
+            <Upload className="mx-auto h-6 w-6 text-tinta-suave/70" />
+            <p className="mt-2 text-sm text-tinta-suave">Arrastra una foto, un PDF o un .txt</p>
+            <p className="text-xs text-tinta-suave/70">Hasta 10 MB</p>
             <div className="mt-3 flex justify-center gap-2">
               <button
                 onClick={() => fileRef.current?.click()}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white"
+                className="rounded-chico bg-tinta px-3 py-1.5 text-xs font-medium text-white"
               >
                 Elegir archivo
               </button>
               <button
                 onClick={() => cameraRef.current?.click()}
-                className="flex items-center gap-1 rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium ring-1 ring-zinc-200 sm:hidden"
+                className="flex items-center gap-1 rounded-chico bg-panel px-3 py-1.5 text-xs font-medium ring-1 ring-borde sm:hidden"
               >
                 <Camera className="h-3.5 w-3.5" /> Tomar foto
               </button>
@@ -94,14 +94,14 @@ export default function MaterialPanel({
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">
+        <p className="rounded-chico bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">
           {error}
         </p>
       )}
 
       {materialName && (
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4 ring-1 ring-zinc-200">
-          <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-medio bg-white p-4 ring-1 ring-borde">
+          <div className="flex items-center gap-2 text-xs font-medium text-tinta-suave">
             <FileText className="h-3.5 w-3.5" />
             <span className="truncate">{materialName}</span>
           </div>
@@ -113,11 +113,11 @@ export default function MaterialPanel({
               className="max-h-64"
             />
           )}
-          <p className="text-sm leading-relaxed text-zinc-700">{summary}</p>
+          <p className="text-sm leading-relaxed text-tinta">{summary}</p>
           {onStartChat && (
             <button
               onClick={onStartChat}
-              className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white"
+              className="w-full rounded-chico bg-tinta px-3 py-2 text-sm font-medium text-white"
             >
               Conversar sobre esto
             </button>
