@@ -46,7 +46,7 @@ export const guardia: RequestHandler = (req, res, next) => {
 };
 
 export interface Resultado {
-  nodes: Array<{ id: string; label: string; type: string; origin: string }>;
+  nodes: Array<{ id: string; label: string; type: string }>;
   links: Array<{ source: string; target: string; relation: string }>;
 }
 
@@ -81,8 +81,10 @@ export async function extraerGrafo(
     maxNuevos: 40,
   });
 
+  // `origin` (material/estudiante/tutor) es pedagogia interna de conText y no
+  // significa nada para un comprador externo: no se vende ruido.
   return {
-    nodes: delta.nodes.map(({ id, label, type, origin }) => ({ id, label, type, origin })),
+    nodes: delta.nodes.map(({ id, label, type }) => ({ id, label, type })),
     links: delta.links.map(({ source, target, relation }) => ({ source, target, relation })),
   };
 }
@@ -126,7 +128,6 @@ export const contrato = {
             id: { type: 'string' },
             label: { type: 'string' },
             type: { enum: ['concepto', 'afirmacion', 'evidencia', 'ejemplo', 'pregunta'] },
-            origin: { enum: ['material', 'estudiante', 'tutor'] },
           },
         },
       },
