@@ -8,6 +8,7 @@ import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta } from './graph.js';
 import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
+import { loadMaterial, saveMaterial } from './blob.js';
 import { getSession, newSession, persist, snapshot, stats } from './store.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -78,6 +79,20 @@ async function start() {
     message: { error: 'Subiste muchos archivos seguidos. Espera unos minutos.' },
   });
 
+  /** Devuelve el archivo original de la sesion (el contenedor de blobs es privado). */
+  app.get('/api/material/:sessionId/archivo', async (req, res) => {
+    const session = await getSession(req.params.sessionId);
+    if (!session?.materialBlob) return res.status(404).json({ error: 'Sin material' });
+
+    const archivo = await loadMaterial(session.materialBlob);
+    if (!archivo) return res.status(404).json({ error: 'El material ya no esta disponible' });
+
+    res.setHeader('Content-Type', archivo.mime);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.setHeader('Content-Disposition', 'inline');
+    res.send(archivo.buffer);
+  });
+
   app.post('/api/material', materialLimiter, (req, res) => {
     upload.single('file')(req, res, async (uploadErr: any) => {
       if (uploadErr) {
@@ -107,11 +122,24 @@ async function start() {
         mergeDelta(session.graph, delta);
         session.summary = summary;
         session.materialName = file.originalname.slice(0, 120);
+
+        // Guardamos el archivo para que siga visible durante toda la conversacion.
+        const guardado = await saveMaterial(
+          session.sessionId,
+          file.buffer,
+          file.mimetype.split(';')[0].trim().toLowerCase(),
+          file.originalname,
+        );
+        session.materialBlob = guardado.blobName;
+        session.materialMime = guardado.mime;
+
         await persist(session);
 
         res.json({
           summary,
           materialName: session.materialName,
+          materialMime: session.materialMime,
+          materialUrl: `/api/material/${session.sessionId}/archivo`,
           graph_delta: delta,
           metrics: computeMetrics(session.graph, session.turns),
         });

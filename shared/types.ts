@@ -65,5 +65,8 @@ export interface SessionSnapshot {
   graph: Graph;
   summary: string;
   materialName: string | null;
+  materialMime: string | null;
+  /** Ruta de la API donde sigue disponible el archivo original (null si no hay). */
+  materialUrl: string | null;
   metrics: Metrics;
 }

@@ -1,7 +1,16 @@
-import { useEffect, useRef } from 'react';
-import { Loader2, Mic, Send, Square, Volume2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ChevronDown,
+  Image as ImageIcon,
+  Loader2,
+  Mic,
+  Send,
+  Square,
+  Volume2,
+} from 'lucide-react';
 import type { ChatMessage } from '../../shared/types';
 import { dictationSupported, ttsSupported, useDictation, useReadAloud } from '../speech';
+import MaterialPreview from './MaterialPreview';
 
 export default function Chat({
   messages,
@@ -11,6 +20,7 @@ export default function Chat({
   streaming,
   disabled,
   error,
+  material,
 }: {
   messages: ChatMessage[];
   draft: string;
@@ -19,7 +29,10 @@ export default function Chat({
   streaming: boolean;
   disabled: boolean;
   error: string | null;
+  /** Solo en movil: el material queda fijo sobre la conversacion. */
+  material?: { url: string; mime: string | null; nombre: string | null } | null;
 }) {
+  const [materialAbierto, setMaterialAbierto] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -38,6 +51,36 @@ export default function Chat({
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <h2 className="text-sm font-semibold text-zinc-700">Conversación</h2>
+
+      {material && (
+        <button
+          onClick={() => setMaterialAbierto((v) => !v)}
+          aria-expanded={materialAbierto}
+          className="shrink-0 overflow-hidden rounded-xl bg-white text-left ring-1 ring-zinc-200"
+        >
+          <div className="flex items-center gap-2 px-3 py-2">
+            <ImageIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+            <span className="flex-1 truncate text-xs text-zinc-600">
+              {material.nombre ?? 'Tu material'}
+            </span>
+            <ChevronDown
+              className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform ${
+                materialAbierto ? 'rotate-180' : ''
+              }`}
+            />
+          </div>
+          {materialAbierto && (
+            <div className="px-3 pb-3">
+              <MaterialPreview
+                url={material.url}
+                mime={material.mime}
+                nombre={material.nombre}
+                className="max-h-56"
+              />
+            </div>
+          )}
+        </button>
+      )}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4 ring-1 ring-zinc-200">
         {messages.length === 0 && (

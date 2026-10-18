@@ -37,6 +37,8 @@ export default function App() {
   const [metrics, setMetrics] = useState<Metrics>(EMPTY_METRICS);
   const [summary, setSummary] = useState('');
   const [materialName, setMaterialName] = useState<string | null>(null);
+  const [materialUrl, setMaterialUrl] = useState<string | null>(null);
+  const [materialMime, setMaterialMime] = useState<string | null>(null);
 
   const [draft, setDraft] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -56,6 +58,8 @@ export default function App() {
         setMetrics(snap.metrics);
         setSummary(snap.summary);
         setMaterialName(snap.materialName);
+        setMaterialUrl(snap.materialUrl);
+        setMaterialMime(snap.materialMime);
       })
       .catch((e) => setChatError(e?.message ?? 'No pude conectar con el servidor.'));
   }, []);
@@ -116,6 +120,9 @@ export default function App() {
       const res = await uploadMaterial(session.sessionId, file);
       setSummary(res.summary);
       setMaterialName(res.materialName);
+      // Marca de tiempo: si el estudiante cambia de material, el navegador no reusa la cache.
+      setMaterialUrl(`${res.materialUrl}?v=${Date.now()}`);
+      setMaterialMime(res.materialMime);
       applyDelta(res.graph_delta);
       setMetrics(res.metrics);
     } catch (e: any) {
@@ -129,6 +136,8 @@ export default function App() {
     <MaterialPanel
       summary={summary}
       materialName={materialName}
+      materialUrl={materialUrl}
+      materialMime={materialMime}
       busy={materialBusy}
       error={materialError}
       onPick={pickMaterial}
@@ -144,6 +153,12 @@ export default function App() {
       streaming={streaming}
       disabled={!session}
       error={chatError}
+      material={
+        // En escritorio el material ya esta a la vista en su columna.
+        !isDesktop && materialUrl
+          ? { url: materialUrl, mime: materialMime, nombre: materialName }
+          : null
+      }
     />
   );
   const grafo = <GraphPanel graph={graph} metrics={metrics} />;

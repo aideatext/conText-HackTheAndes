@@ -1,9 +1,12 @@
 import { useRef, useState } from 'react';
 import { Camera, FileText, Loader2, Upload } from 'lucide-react';
+import MaterialPreview from './MaterialPreview';
 
 export default function MaterialPanel({
   summary,
   materialName,
+  materialUrl,
+  materialMime,
   busy,
   error,
   onPick,
@@ -11,6 +14,8 @@ export default function MaterialPanel({
 }: {
   summary: string;
   materialName: string | null;
+  materialUrl: string | null;
+  materialMime: string | null;
   busy: boolean;
   error: string | null;
   onPick: (file: File) => void;
@@ -19,12 +24,10 @@ export default function MaterialPanel({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
   function handle(file: File | undefined | null) {
     if (!file) return;
-    setPreview(file.type.startsWith('image/') ? URL.createObjectURL(file) : null);
     onPick(file);
   }
 
@@ -102,11 +105,12 @@ export default function MaterialPanel({
             <FileText className="h-3.5 w-3.5" />
             <span className="truncate">{materialName}</span>
           </div>
-          {preview && (
-            <img
-              src={preview}
-              alt="Vista previa del material"
-              className="max-h-48 w-full rounded-lg object-contain ring-1 ring-zinc-200"
+          {materialUrl && (
+            <MaterialPreview
+              url={materialUrl}
+              mime={materialMime}
+              nombre={materialName}
+              className="max-h-64"
             />
           )}
           <p className="text-sm leading-relaxed text-zinc-700">{summary}</p>

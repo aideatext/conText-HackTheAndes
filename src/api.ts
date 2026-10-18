@@ -51,6 +51,8 @@ export async function getStats(): Promise<Stats> {
 export interface MaterialResult {
   summary: string;
   materialName: string;
+  materialMime: string | null;
+  materialUrl: string;
   graph_delta: GraphDelta;
   metrics: Metrics;
 }

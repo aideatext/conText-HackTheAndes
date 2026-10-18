@@ -16,6 +16,9 @@ export interface Session {
   graph: Graph;
   summary: string;
   materialName: string | null;
+  /** Nombre del blob con el archivo original, para seguir mostrandolo en la conversacion. */
+  materialBlob: string | null;
+  materialMime: string | null;
   turns: number;
 }
 
@@ -55,6 +58,8 @@ export function newSession(): Session {
     graph: { nodes: [], links: [] },
     summary: '',
     materialName: null,
+    materialBlob: null,
+    materialMime: null,
     turns: 0,
   };
   memory.set(session.sessionId, session);
@@ -111,6 +116,9 @@ export function snapshot(session: Session): SessionSnapshot {
     graph: session.graph,
     summary: session.summary,
     materialName: session.materialName,
+    materialMime: session.materialMime,
+    // El archivo se sirve por la API, no por una URL publica del blob.
+    materialUrl: session.materialBlob ? `/api/material/${session.sessionId}/archivo` : null,
     metrics: computeMetrics(session.graph, session.turns),
   };
 }
