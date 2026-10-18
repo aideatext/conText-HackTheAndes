@@ -1,10 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
-import { getStats, resumeOrCreateSession, sendTurn, uploadMaterial, type Stats } from './api';
+import {
+  borrarSesion,
+  createSession,
+  getStats,
+  resumeOrCreateSession,
+  retomarSesion,
+  sendTurn,
+  uploadMaterial,
+  type SesionExportada,
+  type Stats,
+} from './api';
 import { exportarPdf } from './export';
 import Chat from './components/Chat';
 import { AvisoNvidia, Marca } from './components/Marca';
+import MiSesion from './components/MiSesion';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
 
@@ -53,6 +64,71 @@ export default function App() {
   const isDesktop = useIsDesktop();
   const svgRef = useRef<SVGSVGElement>(null);
   const [exportando, setExportando] = useState(false);
+  const [sesionOcupada, setSesionOcupada] = useState(false);
+
+  const hayAlgo = messages.length > 0 || graph.nodes.length > 0;
+
+  function cargarSnapshot(snap: SessionSnapshot) {
+    setSession(snap);
+    setMessages(snap.messages);
+    setGraph(snap.graph);
+    setMetrics(snap.metrics);
+    setSummary(snap.summary);
+    setMaterialName(snap.materialName);
+    setMaterialUrl(snap.materialUrl);
+    setMaterialMime(snap.materialMime);
+  }
+
+  /** Se lleva la sesion entera en JSON para poder retomarla. */
+  function guardarSesion() {
+    const datos: SesionExportada = {
+      version: 1,
+      exportadaEl: new Date().toISOString(),
+      messages,
+      graph,
+      summary,
+      materialName,
+      turns: metrics.turnos,
+    };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mi-sesion-context.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function retomar(archivo: File) {
+    setSesionOcupada(true);
+    setChatError(null);
+    try {
+      const snap = await retomarSesion(JSON.parse(await archivo.text()));
+      cargarSnapshot(snap);
+      // El archivo original no viaja en el JSON: se avisa en vez de fingir.
+      setMaterialUrl(null);
+      setMaterialMime(null);
+    } catch (e: any) {
+      setChatError(e?.message ?? 'Ese archivo no es una sesión de conText.');
+    } finally {
+      setSesionOcupada(false);
+    }
+  }
+
+  async function borrarTodo() {
+    if (!session) return;
+    setSesionOcupada(true);
+    try {
+      await borrarSesion(session.sessionId);
+      cargarSnapshot(await createSession());
+      setChatError(null);
+    } catch {
+      setChatError('No pude borrar la sesión. Intenta de nuevo.');
+    } finally {
+      setSesionOcupada(false);
+    }
+  }
 
   useEffect(() => {
     resumeOrCreateSession()
@@ -147,6 +223,15 @@ export default function App() {
       error={materialError}
       onPick={pickMaterial}
       onStartChat={isDesktop ? undefined : () => setTab('chat')}
+      extra={
+        <MiSesion
+          onGuardar={guardarSesion}
+          onRetomar={retomar}
+          onBorrar={borrarTodo}
+          ocupado={sesionOcupada}
+          hayAlgo={hayAlgo}
+        />
+      }
     />
   );
   const chat = (

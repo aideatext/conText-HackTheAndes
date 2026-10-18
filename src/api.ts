@@ -1,4 +1,4 @@
-import type { GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
+import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
 
 const SESSION_KEY = 'context.sessionId';
 
@@ -34,6 +34,37 @@ export function resumeOrCreateSession(): Promise<SessionSnapshot> {
     throw err;
   });
   return inFlight;
+}
+
+/** El JSON que el estudiante se lleva para volver despues. */
+export interface SesionExportada {
+  version: number;
+  exportadaEl: string;
+  messages: ChatMessage[];
+  graph: Graph;
+  summary: string;
+  materialName: string | null;
+  turns: number;
+}
+
+/** Borra del servidor la conversacion, el grafo y el archivo. */
+export async function borrarSesion(sessionId: string): Promise<void> {
+  await fetch(`/api/session/${encodeURIComponent(sessionId)}`, { method: 'DELETE' });
+  localStorage.removeItem(SESSION_KEY);
+}
+
+/** Retoma una sesion a partir del JSON guardado. */
+export async function retomarSesion(datos: unknown): Promise<SessionSnapshot> {
+  const snap = (await jsonOrThrow(
+    await fetch('/api/session/retomar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos),
+    }),
+  )) as SessionSnapshot;
+  localStorage.setItem(SESSION_KEY, snap.sessionId);
+  inFlight = Promise.resolve(snap);
+  return snap;
 }
 
 export interface Stats {

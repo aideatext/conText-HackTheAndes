@@ -7,6 +7,7 @@ import { DefaultAzureCredential } from '@azure/identity';
 import { TableClient } from '@azure/data-tables';
 import type { ChatMessage, Graph, SessionSnapshot } from '../shared/types.js';
 import { computeMetrics } from './graph.js';
+import { deleteMaterial } from './blob.js';
 
 export interface Session {
   sessionId: string;
@@ -121,6 +122,64 @@ export function snapshot(session: Session): SessionSnapshot {
     materialUrl: session.materialBlob ? `/api/material/${session.sessionId}/archivo` : null,
     metrics: computeMetrics(session.graph, session.turns),
   };
+}
+
+/**
+ * Borra la sesion entera: conversacion, grafo y archivo. Es lo que sostiene la
+ * promesa de "Borrar todo": si no se puede cumplir, no se puede prometer.
+ */
+export async function deleteSession(sessionId: string): Promise<void> {
+  const session = memory.get(sessionId) ?? (await getSession(sessionId));
+  if (session?.materialBlob) await deleteMaterial(session.materialBlob);
+  memory.delete(sessionId);
+
+  if (!table) return;
+  try {
+    await tableReady;
+    await table.deleteEntity(PARTITION, sessionId);
+  } catch (err: any) {
+    if (err?.statusCode !== 404) {
+      console.warn('[store] no se pudo borrar la sesion:', err?.message);
+    }
+  }
+}
+
+/**
+ * Caducidad: las sesiones que nadie toca en 7 dias se borran solas, igual que
+ * los archivos. Sin esto, "no guardamos nada" seria mentira para quien se va
+ * sin pulsar el boton.
+ */
+const DIAS_DE_VIDA = 7;
+
+export async function sweepExpired(): Promise<number> {
+  const limite = Date.now() - DIAS_DE_VIDA * 24 * 60 * 60 * 1000;
+  let borradas = 0;
+
+  for (const [id, s] of memory) {
+    if (Date.parse(s.updatedAt) < limite) {
+      await deleteSession(id);
+      borradas++;
+    }
+  }
+
+  if (table) {
+    try {
+      await tableReady;
+      for await (const e of table.listEntities<{ updatedAt?: string }>({
+        queryOptions: { select: ['RowKey', 'updatedAt'] },
+      })) {
+        if (Date.parse(e.updatedAt ?? '') < limite) {
+          await deleteSession(String(e.rowKey));
+          borradas++;
+        }
+      }
+    } catch (err: any) {
+      console.warn('[store] fallo la limpieza de sesiones viejas:', err?.message);
+    }
+  }
+
+  if (borradas) console.log(`[store] ${borradas} sesiones caducadas borradas`);
+  return borradas;
 }
 
 /** Contador publico de uso (evidencia de traccion). */

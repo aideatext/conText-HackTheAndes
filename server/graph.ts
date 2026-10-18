@@ -37,6 +37,24 @@ export const materialSchema = extractionSchema.extend({
   summary: z.string().default(''),
 });
 
+/** El JSON que el estudiante se lleva y puede volver a abrir. */
+export const sesionExportadaSchema = z.object({
+  version: z.number().optional(),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string().max(8000),
+      }),
+    )
+    .max(200)
+    .default([]),
+  graph: extractionSchema.default({ nodes: [], links: [] }),
+  summary: z.string().max(4000).default(''),
+  materialName: z.string().max(160).nullable().default(null),
+  turns: z.number().int().min(0).max(10_000).default(0),
+});
+
 /** slug en minusculas, sin tildes, con guiones. */
 export function slug(text: string): string {
   return text
@@ -69,7 +87,7 @@ export function normalizeDelta(
   raw: unknown,
   graph: Graph,
   turn: number,
-  opts: { hasMaterial?: boolean } = {},
+  opts: { hasMaterial?: boolean; maxNuevos?: number } = {},
 ): GraphDelta {
   const parsed = extractionSchema.safeParse(raw);
   if (!parsed.success) return { nodes: [], links: [] };
@@ -100,7 +118,7 @@ export function normalizeDelta(
       remap.set(n.id, alias);
       continue;
     }
-    if (newNodes.length >= MAX_NEW_NODES) continue;
+    if (newNodes.length >= (opts.maxNuevos ?? MAX_NEW_NODES)) continue;
 
     const node: GraphNode = {
       id: proposed,

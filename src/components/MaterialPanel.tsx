@@ -11,6 +11,7 @@ export default function MaterialPanel({
   error,
   onPick,
   onStartChat,
+  extra,
 }: {
   summary: string;
   materialName: string | null;
@@ -21,6 +22,8 @@ export default function MaterialPanel({
   onPick: (file: File) => void;
   /** Solo en movil: lleva a la pestana de conversacion. */
   onStartChat?: () => void;
+  /** Lo que el estudiante puede hacer con su sesion. */
+  extra?: React.ReactNode;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -124,6 +127,8 @@ export default function MaterialPanel({
           )}
         </div>
       )}
+
+      {extra && <div className="mt-auto">{extra}</div>}
     </section>
   );
 }

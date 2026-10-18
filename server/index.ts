@@ -6,11 +6,19 @@ import rateLimit from 'express-rate-limit';
 import { claude, friendlyError, MODEL, textOf } from './claude.js';
 import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
-import { computeMetrics, mergeDelta } from './graph.js';
+import { computeMetrics, mergeDelta, normalizeDelta, sesionExportadaSchema } from './graph.js';
 import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
-import { getSession, newSession, persist, snapshot, stats } from './store.js';
+import {
+  deleteSession,
+  getSession,
+  newSession,
+  persist,
+  snapshot,
+  stats,
+  sweepExpired,
+} from './store.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 const isProd = process.env.NODE_ENV === 'production';
@@ -87,6 +95,42 @@ async function start() {
 
   app.post('/api/session', (_req, res) => {
     const session = newSession();
+    res.json(snapshot(session));
+  });
+
+  /** Borrar todo: la conversacion, el grafo y el archivo desaparecen del servidor. */
+  app.delete('/api/session/:id', async (req, res) => {
+    await deleteSession(req.params.id);
+    res.status(204).end();
+  });
+
+  /**
+   * Retomar una sesion desde el JSON que el estudiante se llevo. Crea una
+   * sesion nueva en el servidor: el archivo original no vuelve, porque ese
+   * JSON no lo lleva.
+   */
+  app.post('/api/session/retomar', async (req, res) => {
+    const parsed = sesionExportadaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Ese archivo no es una sesión de conText.' });
+    }
+
+    const session = newSession();
+    session.messages = parsed.data.messages.slice(-60);
+    session.summary = parsed.data.summary;
+    session.materialName = parsed.data.materialName;
+    session.turns = parsed.data.turns;
+    // El grafo se revalida: no confiamos en un archivo que viene de fuera.
+    // Sin el tope de 8: esto no es un turno nuevo, es un grafo entero que vuelve.
+    mergeDelta(
+      session.graph,
+      normalizeDelta(parsed.data.graph, session.graph, 0, {
+        hasMaterial: Boolean(parsed.data.materialName),
+        maxNuevos: 500,
+      }),
+    );
+    await persist(session);
+
     res.json(snapshot(session));
   });
 
@@ -266,6 +310,10 @@ async function start() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`conText escuchando en http://localhost:${PORT} (modelo ${MODEL})`);
   });
+
+  // Caducidad de las sesiones: al arrancar y cada seis horas.
+  void sweepExpired();
+  setInterval(() => void sweepExpired(), 6 * 60 * 60 * 1000).unref();
 }
 
 start().catch((err) => {

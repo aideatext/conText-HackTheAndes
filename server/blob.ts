@@ -67,6 +67,18 @@ export async function saveMaterial(
   return { blobName, mime, size: buffer.length };
 }
 
+/** Borra el archivo del estudiante. Se usa al reiniciar la sesion. */
+export async function deleteMaterial(blobName: string): Promise<void> {
+  memoria.delete(blobName);
+  if (!container) return;
+  try {
+    await ready;
+    await container.getBlockBlobClient(blobName).deleteIfExists();
+  } catch (err: any) {
+    console.warn('[blob] no se pudo borrar el material:', err?.message);
+  }
+}
+
 export async function loadMaterial(
   blobName: string,
 ): Promise<{ buffer: Buffer; mime: string } | null> {
