@@ -9,6 +9,7 @@ import {
   type GraphLink,
   type GraphNode,
   type Metrics,
+  type Origin,
 } from '../shared/types.js';
 
 const MAX_NEW_NODES = 8;
@@ -64,9 +65,18 @@ export function parseJsonLoose(text: string): unknown {
  * Normaliza la extraccion del modelo contra el grafo actual y devuelve solo lo nuevo.
  * Descarta nodos repetidos, enlaces a ids inexistentes y enlaces duplicados.
  */
-export function normalizeDelta(raw: unknown, graph: Graph, turn: number): GraphDelta {
+export function normalizeDelta(
+  raw: unknown,
+  graph: Graph,
+  turn: number,
+  opts: { hasMaterial?: boolean } = {},
+): GraphDelta {
   const parsed = extractionSchema.safeParse(raw);
   if (!parsed.success) return { nodes: [], links: [] };
+
+  // Sin material subido no puede haber ideas con origin=material: el estudiante las dijo el.
+  const fixOrigin = (o: Origin): Origin =>
+    !opts.hasMaterial && o === 'material' ? 'estudiante' : o;
 
   const existingIds = new Set(graph.nodes.map((n) => n.id));
   // Un mismo concepto puede volver con otra etiqueta: indexamos tambien por slug de etiqueta.
@@ -92,7 +102,13 @@ export function normalizeDelta(raw: unknown, graph: Graph, turn: number): GraphD
     }
     if (newNodes.length >= MAX_NEW_NODES) continue;
 
-    const node: GraphNode = { id: proposed, label, type: n.type, origin: n.origin, turn };
+    const node: GraphNode = {
+      id: proposed,
+      label,
+      type: n.type,
+      origin: fixOrigin(n.origin),
+      turn,
+    };
     newNodes.push(node);
     existingIds.add(proposed);
     byLabel.set(slug(label), proposed);
@@ -118,11 +134,12 @@ export function normalizeDelta(raw: unknown, graph: Graph, turn: number): GraphD
     if (seenLinks.has(key)) continue;
     seenLinks.add(key);
 
-    const origin =
+    const origin = fixOrigin(
       l.origin ??
-      newNodes.find((n) => n.id === source)?.origin ??
-      graph.nodes.find((n) => n.id === source)?.origin ??
-      'estudiante';
+        newNodes.find((n) => n.id === source)?.origin ??
+        graph.nodes.find((n) => n.id === source)?.origin ??
+        'estudiante',
+    );
     newLinks.push({ source, target, relation: l.relation, origin, turn });
   }
 

@@ -1,103 +1,175 @@
-import { useEffect, useRef, useState } from 'react';
-import { Loader2, Send } from 'lucide-react';
-import type { ChatMessage, SessionSnapshot } from '../shared/types';
-import { resumeOrCreateSession, sendTurn } from './api';
+import { useEffect, useState } from 'react';
+import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
+import { resumeOrCreateSession, sendTurn, uploadMaterial } from './api';
+import Chat from './components/Chat';
+import GraphPanel from './components/GraphPanel';
+import MaterialPanel from './components/MaterialPanel';
+
+const EMPTY_METRICS: Metrics = {
+  ideasEstudiante: 0,
+  nodosTotales: 0,
+  enlacesTotales: 0,
+  ideaMasCentral: null,
+  porcentajeAislados: 0,
+  turnos: 0,
+};
+
+type Tab = 'material' | 'chat' | 'grafo';
 
 export default function App() {
   const [session, setSession] = useState<SessionSnapshot | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [graph, setGraph] = useState<Graph>({ nodes: [], links: [] });
+  const [metrics, setMetrics] = useState<Metrics>(EMPTY_METRICS);
+  const [summary, setSummary] = useState('');
+  const [materialName, setMaterialName] = useState<string | null>(null);
+
   const [draft, setDraft] = useState('');
   const [streaming, setStreaming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [materialBusy, setMaterialBusy] = useState(false);
+  const [materialError, setMaterialError] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('chat');
 
   useEffect(() => {
     resumeOrCreateSession()
       .then((snap) => {
         setSession(snap);
         setMessages(snap.messages);
+        setGraph(snap.graph);
+        setMetrics(snap.metrics);
+        setSummary(snap.summary);
+        setMaterialName(snap.materialName);
       })
-      .catch((e) => setError(String(e.message ?? e)));
+      .catch((e) => setChatError(e?.message ?? 'No pude conectar con el servidor.'));
   }, []);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  function applyDelta(delta: GraphDelta) {
+    setGraph((g) => {
+      const ids = new Set(g.nodes.map((n) => n.id));
+      const keys = new Set(g.links.map((l) => `${l.source}|${l.target}|${l.relation}`));
+      return {
+        nodes: [...g.nodes, ...delta.nodes.filter((n) => !ids.has(n.id))],
+        links: [
+          ...g.links,
+          ...delta.links.filter((l) => !keys.has(`${l.source}|${l.target}|${l.relation}`)),
+        ],
+      };
+    });
+  }
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit() {
     const text = draft.trim();
     if (!text || !session || streaming) return;
 
     setDraft('');
-    setError(null);
+    setChatError(null);
     setStreaming(true);
     setMessages((m) => [...m, { role: 'user', content: text }, { role: 'assistant', content: '' }]);
 
-    await sendTurn(session.sessionId, text, {
-      onToken: (chunk) =>
-        setMessages((m) => {
-          const copy = [...m];
-          copy[copy.length - 1] = {
-            role: 'assistant',
-            content: copy[copy.length - 1].content + chunk,
-          };
-          return copy;
-        }),
-      onError: (message) => setError(message),
-      onDone: () => setStreaming(false),
-    });
-    setStreaming(false);
+    try {
+      await sendTurn(session.sessionId, text, {
+        onToken: (chunk) =>
+          setMessages((m) => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            copy[copy.length - 1] = { role: 'assistant', content: last.content + chunk };
+            return copy;
+          }),
+        onGraphDelta: applyDelta,
+        onMetrics: setMetrics,
+        onError: (message) => setChatError(message),
+      });
+    } catch {
+      setChatError('Se corto la conexion. Intenta de nuevo.');
+    } finally {
+      setStreaming(false);
+    }
   }
 
+  async function pickMaterial(file: File) {
+    if (!session) return;
+    setMaterialError(null);
+    setMaterialBusy(true);
+    try {
+      const res = await uploadMaterial(session.sessionId, file);
+      setSummary(res.summary);
+      setMaterialName(res.materialName);
+      applyDelta(res.graph_delta);
+      setMetrics(res.metrics);
+      setTab('chat');
+    } catch (e: any) {
+      setMaterialError(e?.message ?? 'No pude leer ese archivo.');
+    } finally {
+      setMaterialBusy(false);
+    }
+  }
+
+  const material = (
+    <MaterialPanel
+      summary={summary}
+      materialName={materialName}
+      busy={materialBusy}
+      error={materialError}
+      onPick={pickMaterial}
+    />
+  );
+  const chat = (
+    <Chat
+      messages={messages}
+      draft={draft}
+      setDraft={setDraft}
+      onSubmit={submit}
+      streaming={streaming}
+      disabled={!session}
+      error={chatError}
+    />
+  );
+  const grafo = <GraphPanel graph={graph} metrics={metrics} />;
+
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col p-4">
-      <header className="pb-3">
-        <h1 className="text-xl font-bold">conText</h1>
-        <p className="text-sm text-zinc-500">
-          Conversa sobre tu material. El tutor no hace la tarea: te ayuda a pensarla.
-        </p>
+    <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-3">
+        <div>
+          <h1 className="text-lg leading-tight font-bold tracking-tight">conText</h1>
+          <p className="text-xs text-zinc-500">
+            Piensa tus ideas en voz alta y míralas conectarse.
+          </p>
+        </div>
+        <span className="hidden text-xs text-zinc-400 sm:block">
+          Hack the Andes · Claude en Azure AI Foundry
+        </span>
       </header>
 
-      <div className="flex-1 space-y-3 overflow-y-auto rounded-xl bg-white p-4 ring-1 ring-zinc-200">
-        {messages.length === 0 && (
-          <p className="text-sm text-zinc-400">
-            Escribe lo que estas estudiando y empecemos.
-          </p>
-        )}
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={
-              m.role === 'user'
-                ? 'ml-auto max-w-[85%] rounded-2xl bg-zinc-900 px-4 py-2 text-sm text-white'
-                : 'mr-auto max-w-[85%] rounded-2xl bg-zinc-100 px-4 py-2 text-sm whitespace-pre-wrap'
-            }
+      {/* Movil: pestanas */}
+      <nav className="flex border-b border-zinc-200 bg-white lg:hidden">
+        {(['material', 'chat', 'grafo'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 py-2.5 text-sm font-medium capitalize ${
+              tab === t ? 'border-b-2 border-zinc-900 text-zinc-900' : 'text-zinc-400'
+            }`}
           >
-            {m.content || (streaming && i === messages.length - 1 ? '…' : '')}
-          </div>
+            {t === 'chat' ? 'Conversación' : t === 'grafo' ? 'Grafo' : 'Material'}
+          </button>
         ))}
-        <div ref={endRef} />
-      </div>
+      </nav>
 
-      {error && <p className="pt-2 text-sm text-red-600">{error}</p>}
+      <main className="min-h-0 flex-1 p-4">
+        <div className="hidden h-full gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.4fr)]">
+          {material}
+          {chat}
+          {grafo}
+        </div>
+        <div className="h-full lg:hidden">
+          {tab === 'material' ? material : tab === 'chat' ? chat : grafo}
+        </div>
+      </main>
 
-      <form onSubmit={submit} className="flex gap-2 pt-3">
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={session ? 'Escribe tu mensaje…' : 'Conectando…'}
-          disabled={!session || streaming}
-          className="flex-1 rounded-xl border border-zinc-300 px-4 py-2 text-sm outline-none focus:border-zinc-900"
-        />
-        <button
-          type="submit"
-          disabled={!session || streaming || !draft.trim()}
-          className="rounded-xl bg-zinc-900 px-4 py-2 text-white disabled:opacity-40"
-        >
-          {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </button>
-      </form>
+      <footer className="border-t border-zinc-200 bg-white px-4 py-2 text-center text-[11px] text-zinc-500">
+        Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
+      </footer>
     </div>
   );
 }

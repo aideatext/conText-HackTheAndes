@@ -26,6 +26,22 @@ export async function resumeOrCreateSession(): Promise<SessionSnapshot> {
   return createSession();
 }
 
+export interface MaterialResult {
+  summary: string;
+  materialName: string;
+  graph_delta: GraphDelta;
+  metrics: Metrics;
+}
+
+/** Sube foto, PDF o texto. El servidor valida tipo y tamano. */
+export async function uploadMaterial(sessionId: string, file: File): Promise<MaterialResult> {
+  const form = new FormData();
+  form.append('sessionId', sessionId);
+  form.append('file', file);
+  const res = await fetch('/api/material', { method: 'POST', body: form });
+  return (await jsonOrThrow(res)) as MaterialResult;
+}
+
 export interface TurnHandlers {
   onToken?: (text: string) => void;
   onGraphDelta?: (delta: GraphDelta) => void;

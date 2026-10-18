@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { claude, friendlyError, MODEL, textOf } from './claude.js';
 import { tutorSystem } from './prompts.js';
+import { extractDelta } from './extract.js';
+import { computeMetrics, mergeDelta } from './graph.js';
 import { getSession, newSession, persist, snapshot, stats } from './store.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -111,8 +113,21 @@ async function start() {
 
     session.messages.push({ role: 'assistant', content: tutorText });
     session.turns += 1;
+
+    // Paso 2: extraer el grafo de este turno. Si falla, la conversacion sigue igual.
+    const delta = await extractDelta(
+      session.graph,
+      studentText,
+      tutorText,
+      session.turns,
+      Boolean(session.materialName),
+    );
+    mergeDelta(session.graph, delta);
+
     await persist(session);
 
+    send('graph_delta', delta);
+    send('metrics', computeMetrics(session.graph, session.turns));
     send('done', { reply: tutorText });
     res.end();
   });
