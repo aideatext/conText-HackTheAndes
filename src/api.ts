@@ -16,14 +16,24 @@ export async function createSession(): Promise<SessionSnapshot> {
   return snap;
 }
 
+// React StrictMode ejecuta el efecto dos veces en desarrollo: sin esto se crearian
+// sesiones vacias duplicadas, que ademas ensuciarian /api/stats.
+let inFlight: Promise<SessionSnapshot> | null = null;
+
 /** Reanuda la sesion guardada en localStorage; si ya no existe en el servidor, crea una nueva. */
-export async function resumeOrCreateSession(): Promise<SessionSnapshot> {
-  const saved = localStorage.getItem(SESSION_KEY);
-  if (saved) {
-    const res = await fetch(`/api/session/${encodeURIComponent(saved)}`);
-    if (res.ok) return (await res.json()) as SessionSnapshot;
-  }
-  return createSession();
+export function resumeOrCreateSession(): Promise<SessionSnapshot> {
+  inFlight ??= (async () => {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const res = await fetch(`/api/session/${encodeURIComponent(saved)}`);
+      if (res.ok) return (await res.json()) as SessionSnapshot;
+    }
+    return createSession();
+  })().catch((err) => {
+    inFlight = null;
+    throw err;
+  });
+  return inFlight;
 }
 
 export interface MaterialResult {

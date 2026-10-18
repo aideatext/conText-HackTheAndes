@@ -16,6 +16,20 @@ const EMPTY_METRICS: Metrics = {
 
 type Tab = 'material' | 'chat' | 'grafo';
 
+/** Solo montamos un arbol (3 columnas o pestanas): el grafo D3 no debe existir dos veces. */
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsDesktop(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return isDesktop;
+}
+
 export default function App() {
   const [session, setSession] = useState<SessionSnapshot | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -30,6 +44,7 @@ export default function App() {
   const [materialBusy, setMaterialBusy] = useState(false);
   const [materialError, setMaterialError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('chat');
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     resumeOrCreateSession()
@@ -97,7 +112,6 @@ export default function App() {
       setMaterialName(res.materialName);
       applyDelta(res.graph_delta);
       setMetrics(res.metrics);
-      setTab('chat');
     } catch (e: any) {
       setMaterialError(e?.message ?? 'No pude leer ese archivo.');
     } finally {
@@ -112,6 +126,7 @@ export default function App() {
       busy={materialBusy}
       error={materialError}
       onPick={pickMaterial}
+      onStartChat={isDesktop ? undefined : () => setTab('chat')}
     />
   );
   const chat = (
@@ -141,30 +156,34 @@ export default function App() {
         </span>
       </header>
 
-      {/* Movil: pestanas */}
-      <nav className="flex border-b border-zinc-200 bg-white lg:hidden">
-        {(['material', 'chat', 'grafo'] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 py-2.5 text-sm font-medium capitalize ${
-              tab === t ? 'border-b-2 border-zinc-900 text-zinc-900' : 'text-zinc-400'
-            }`}
-          >
-            {t === 'chat' ? 'Conversación' : t === 'grafo' ? 'Grafo' : 'Material'}
-          </button>
-        ))}
-      </nav>
+      {!isDesktop && (
+        <nav className="flex border-b border-zinc-200 bg-white">
+          {(['material', 'chat', 'grafo'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-2.5 text-sm font-medium ${
+                tab === t ? 'border-b-2 border-zinc-900 text-zinc-900' : 'text-zinc-400'
+              }`}
+            >
+              {t === 'chat' ? 'Conversación' : t === 'grafo' ? 'Grafo' : 'Material'}
+            </button>
+          ))}
+        </nav>
+      )}
 
       <main className="min-h-0 flex-1 p-4">
-        <div className="hidden h-full gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.4fr)]">
-          {material}
-          {chat}
-          {grafo}
-        </div>
-        <div className="h-full lg:hidden">
-          {tab === 'material' ? material : tab === 'chat' ? chat : grafo}
-        </div>
+        {isDesktop ? (
+          <div className="grid h-full gap-4 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.4fr)]">
+            {material}
+            {chat}
+            {grafo}
+          </div>
+        ) : (
+          <div className="h-full">
+            {tab === 'material' ? material : tab === 'chat' ? chat : grafo}
+          </div>
+        )}
       </main>
 
       <footer className="border-t border-zinc-200 bg-white px-4 py-2 text-center text-[11px] text-zinc-500">

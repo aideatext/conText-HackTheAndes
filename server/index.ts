@@ -1,11 +1,13 @@
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
+import multer from 'multer';
 import rateLimit from 'express-rate-limit';
 import { claude, friendlyError, MODEL, textOf } from './claude.js';
 import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta } from './graph.js';
+import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
 import { getSession, newSession, persist, snapshot, stats } from './store.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -60,6 +62,67 @@ async function start() {
     const session = await getSession(req.params.id);
     if (!session) return res.status(404).json({ error: 'Sesion no encontrada' });
     res.json(snapshot(session));
+  });
+
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_BYTES, files: 1 },
+  });
+
+  const materialLimiter = rateLimit({
+    // Holgado a proposito: en un colegio muchos estudiantes comparten la misma IP.
+    windowMs: 10 * 60 * 1000,
+    limit: 20,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Subiste muchos archivos seguidos. Espera unos minutos.' },
+  });
+
+  app.post('/api/material', materialLimiter, (req, res) => {
+    upload.single('file')(req, res, async (uploadErr: any) => {
+      if (uploadErr) {
+        const tooBig = uploadErr.code === 'LIMIT_FILE_SIZE';
+        return res.status(tooBig ? 413 : 400).json({
+          error: tooBig
+            ? 'Ese archivo pesa mas de 10 MB. Prueba con una foto mas liviana o un PDF mas corto.'
+            : 'No pude recibir el archivo. Intenta de nuevo.',
+        });
+      }
+
+      const sessionId = req.body?.sessionId;
+      const file = req.file;
+      if (typeof sessionId !== 'string' || !file) {
+        return res.status(400).json({ error: 'Faltan sessionId o el archivo.' });
+      }
+
+      const session = await getSession(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Sesion no encontrada. Recarga la pagina.' });
+      }
+
+      try {
+        const blocks = toContentBlocks(file);
+        const { summary, delta } = await readMaterial(blocks, session.graph, 0);
+
+        mergeDelta(session.graph, delta);
+        session.summary = summary;
+        session.materialName = file.originalname.slice(0, 120);
+        await persist(session);
+
+        res.json({
+          summary,
+          materialName: session.materialName,
+          graph_delta: delta,
+          metrics: computeMetrics(session.graph, session.turns),
+        });
+      } catch (err) {
+        if (err instanceof UnsupportedMaterial) {
+          return res.status(415).json({ error: err.message });
+        }
+        console.error('[material]', err);
+        res.status(502).json({ error: friendlyError(err) });
+      }
+    });
   });
 
   app.post('/api/turn', turnLimiter, async (req, res) => {

@@ -7,12 +7,15 @@ export default function MaterialPanel({
   busy,
   error,
   onPick,
+  onStartChat,
 }: {
   summary: string;
   materialName: string | null;
   busy: boolean;
   error: string | null;
   onPick: (file: File) => void;
+  /** Solo en movil: lleva a la pestana de conversacion. */
+  onStartChat?: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -107,6 +110,14 @@ export default function MaterialPanel({
             />
           )}
           <p className="text-sm leading-relaxed text-zinc-700">{summary}</p>
+          {onStartChat && (
+            <button
+              onClick={onStartChat}
+              className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white"
+            >
+              Conversar sobre esto
+            </button>
+          )}
         </div>
       )}
     </section>
