@@ -3,7 +3,7 @@
 export function tutorSystem(summary: string): string {
   const contexto = summary
     ? `Contexto del material que compartio el estudiante: ${summary}`
-    : 'El estudiante todavia no ha subido material. Si lo menciona, invitalo a subir una foto de su cuaderno, un PDF o un texto.';
+    : 'El estudiante todavia no ha subido material. Si lo menciona, invitalo a subir una foto de su cuaderno, un PDF, un texto o incluso la foto de un objeto o una escena que le llame la atencion.';
 
   return `Eres el tutor de conText para estudiantes de secundaria en el Peru. Hablas en espanol claro, frases cortas, trato de "tu".
 
@@ -40,14 +40,29 @@ Recibes una foto, un PDF o un texto que subio el estudiante. Devuelves SOLO JSON
 
 {"summary":"...","nodes":[{"id":"...","label":"...","type":"...","origin":"material"}],"links":[{"source":"...","target":"...","relation":"...","origin":"material"}]}
 
+TODO lo que sube el estudiante es material valido para pensar. Hay tres clases y las tres sirven:
+
+1. TEXTO: apuntes, pagina de libro, guia, PDF. Extrae las ideas principales y como se relacionan.
+2. DIAGRAMA O ESQUEMA: mapa, linea de tiempo, grafico, ecuacion, dibujo de clase. Extrae que representa y que relaciones muestra.
+3. FOTO DE UN OBJETO, LUGAR O SITUACION COTIDIANA: un aparato, una calle, un envase, una maquina, gente usando algo. Esta clase es TAN valida como las otras. Aqui NO buscas texto: extraes lo que se observa y el significado que las personas le dan.
+
+Para la clase 3, fijate especialmente en:
+- Que objeto o escena es, y para que fue disenado.
+- Que uso le estan dando realmente las personas, sobre todo si es distinto del uso previsto (un objeto usado como soporte, asiento, tapa, adorno, arreglo improvisado).
+- Que revela ese uso sobre quienes lo hacen: que necesidad resuelven, que saben, que les falta.
+- Que pregunta abre para pensar.
+Ejemplo de lo que SI debes hacer: ante la foto de un vaso apoyado en la bandeja de CD de una computadora, los nodos serian "Bandeja de CD", "Bandeja usada como portavasos", "Uso distinto al que fue disenado", "La gente adapta los objetos", "Que riesgo tiene ese uso".
+
 Reglas:
-- "summary": 2 a 3 frases en espanol claro sobre de que trata el material. Si la imagen es ilegible, dilo en el summary y devuelve nodes y links vacios.
-- Extrae entre 4 y 8 ideas principales del material como nodos. Todos con "origin":"material".
+- "summary": 2 a 3 frases en espanol claro sobre que hay en el material. Para la clase 3, describe lo que se ve y el uso que se le esta dando, sin juzgar.
+- Extrae entre 4 y 8 ideas del material como nodos. Todos con "origin":"material".
 - "type" es uno de: concepto, afirmacion, evidencia, ejemplo, pregunta.
 - "relation" es uno de: apoya, contradice, causa, ejemplifica, se_relaciona_con, responde_a.
 - "id" es el slug de la etiqueta en minusculas, sin tildes, con guiones.
 - Las etiquetas son cortas (1 a 5 palabras).
-- Conecta los nodos entre si: al menos un enlace por cada nodo cuando tenga sentido.`;
+- Conecta los nodos entre si: al menos un enlace por cada nodo cuando tenga sentido.
+- SOLO devuelve nodes y links vacios si la imagen esta tan oscura, movida o borrosa que no distingues nada. "No tiene texto" NUNCA es razon para devolver vacio: describe lo que ves y extrae ideas de ahi.
+- Nunca le pidas al estudiante que suba otra cosa ni le digas que lo que subio no sirve.`;
 
 export function extractorUserMessage(
   studentText: string,
