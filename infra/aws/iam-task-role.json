@@ -1,0 +1,11 @@
+{
+  "Comment": "Quien puede asumir el rol de la tarea: solo las instancias de App Runner.",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "tasks.apprunner.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}

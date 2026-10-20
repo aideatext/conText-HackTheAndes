@@ -251,4 +251,12 @@ Se reemplazó el motor (Gemini → Claude en Foundry), el esquema del grafo (ent
 → esquema pedagógico), la persistencia (`conversations.json` en disco, que devolvía las
 conversaciones de todos a cualquiera → Table Storage por sesión) y toda la capa de credenciales.
 
+## 10. Llevarlo a AWS
+
+[`docs/migracion-aws.md`](docs/migracion-aws.md) es la guía de migración completa: el mapa pieza por
+pieza de Azure a AWS (Bedrock, App Runner, DynamoDB, S3, Polly), los diffs de cada módulo del
+servidor, las políticas IAM en [`infra/aws/`](infra/aws/), el orden de corte y la verificación con
+las mismas cinco suites. Incluye el único punto donde AWS no iguala a Azure: **Polly no tiene voz
+peruana**, y qué hacer al respecto.
+
 Licencia Apache-2.0.

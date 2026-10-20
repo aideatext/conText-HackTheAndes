@@ -1,0 +1,44 @@
+{
+  "ServiceName": "context",
+  "SourceConfiguration": {
+    "AuthenticationConfiguration": {
+      "AccessRoleArn": "arn:aws:iam::CUENTA:role/context-ecr-access"
+    },
+    "AutoDeploymentsEnabled": false,
+    "ImageRepository": {
+      "ImageIdentifier": "CUENTA.dkr.ecr.REGION.amazonaws.com/context:v1",
+      "ImageRepositoryType": "ECR",
+      "ImageConfiguration": {
+        "Port": "3000",
+        "RuntimeEnvironmentVariables": {
+          "NODE_ENV": "production",
+          "PORT": "3000",
+          "AWS_REGION": "REGION",
+          "CLAUDE_MODEL": "anthropic.claude-opus-5-5",
+          "DYNAMODB_TABLE": "context-sessions",
+          "S3_BUCKET": "context-materiales-CUENTA",
+          "POLLY_VOICE": "Mia"
+        },
+        "RuntimeEnvironmentSecrets": {
+          "QATOM_TOKEN": "arn:aws:secretsmanager:REGION:CUENTA:secret:context/qatom-token"
+        }
+      }
+    }
+  },
+  "InstanceConfiguration": {
+    "Cpu": "1 vCPU",
+    "Memory": "2 GB",
+    "InstanceRoleArn": "arn:aws:iam::CUENTA:role/context-task"
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/healthz",
+    "Interval": 10,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 5
+  },
+  "NetworkConfiguration": {
+    "IngressConfiguration": { "IsPubliclyAccessible": true }
+  }
+}

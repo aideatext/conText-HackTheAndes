@@ -1,0 +1,11 @@
+{
+  "Rules": [
+    {
+      "ID": "borrar-materiales-a-los-7-dias",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "materiales/" },
+      "Expiration": { "Days": 7 },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 }
+    }
+  ]
+}

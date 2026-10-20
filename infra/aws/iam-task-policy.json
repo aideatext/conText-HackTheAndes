@@ -1,0 +1,44 @@
+{
+  "Comment": "Permisos de la tarea de conText en App Runner. Reemplazar CUENTA, REGION y PROYECTO. Cada bloque es el minimo que usa el codigo: nada de wildcards sobre recursos.",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ElModelo",
+      "Effect": "Allow",
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+      "Resource": [
+        "arn:aws:bedrock:REGION::foundation-model/anthropic.*",
+        "arn:aws:bedrock:REGION:CUENTA:inference-profile/*anthropic.*"
+      ]
+    },
+    {
+      "Sid": "LasSesiones",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:CUENTA:table/PROYECTO-sessions"
+    },
+    {
+      "Sid": "ElMaterialDelEstudiante",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::PROYECTO-materiales-CUENTA/materiales/*"
+    },
+    {
+      "Sid": "LaVozDelTutor",
+      "Effect": "Allow",
+      "Action": "polly:SynthesizeSpeech",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ElTokenDeQatom",
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": "arn:aws:secretsmanager:REGION:CUENTA:secret:PROYECTO/qatom-token-*"
+    }
+  ]
+}
