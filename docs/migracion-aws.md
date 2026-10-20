@@ -162,6 +162,12 @@ export const claude = new AnthropicBedrockMantle({
 `textOf()` y `friendlyError()` se quedan **tal cual**: el filtrado de bloques `thinking` antes del
 `text` aplica igual, y los códigos 429/529 son los mismos.
 
+**El caching se conserva tal cual.** Bedrock soporta *prompt caching*, así que los
+`cache_control` del extractor, del material y del tutor siguen funcionando sin cambios — y son lo
+que hoy ahorra el 53 % de los tokens de entrada. Un detalle: la integración antigua de Bedrock
+(Opus 4.6 y anteriores) rechaza el `cache_control` de nivel superior con un 400; con el cliente
+Mantle y Opus 5.5 no aplica, pero si alguien baja de modelo, el del tutor es el que rompería.
+
 Dos avisos:
 
 - Usar el cliente **`AnthropicBedrockMantle`**, no `AnthropicBedrock` a secas: ese es el camino
