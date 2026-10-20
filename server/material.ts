@@ -103,7 +103,10 @@ export async function readMaterial(
       const res = await claude.messages.create({
         model: MODEL,
         max_tokens: 2000,
-        system: MATERIAL_SYSTEM,
+        // 1123 tokens fijos que hoy se pagan enteros en cada subida.
+        system: [
+          { type: 'text', text: MATERIAL_SYSTEM, cache_control: { type: 'ephemeral' } },
+        ],
         messages: [{ role: 'user', content: content as any }],
       });
 

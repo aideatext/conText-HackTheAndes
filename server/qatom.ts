@@ -72,7 +72,8 @@ export async function extraerGrafo(
   const res = await claude.messages.create({
     model: MODEL,
     max_tokens: 1500,
-    system: EXTRACTOR_SYSTEM,
+    // El mismo prefijo que el extractor interno: comparten entrada de cache.
+    system: [{ type: 'text', text: EXTRACTOR_SYSTEM, cache_control: { type: 'ephemeral' } }],
     messages: [{ role: 'user', content: mensaje }],
   });
 

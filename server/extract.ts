@@ -25,7 +25,15 @@ export async function extractDelta(
       const res = await claude.messages.create({
         model: MODEL,
         max_tokens: 1200,
-        system: EXTRACTOR_SYSTEM,
+        // El system del extractor es fijo (542 tokens, por encima del minimo de
+        // 512): se cachea una vez y lo reusan todos los turnos de todas las
+        // sesiones mientras siga caliente.
+        system: [
+          { type: 'text', text: EXTRACTOR_SYSTEM, cache_control: { type: 'ephemeral' } },
+        ],
+        // Medido sobre turnos reales: medium da el mismo grafo que high, y low
+        // extraia una idea menos en uno de cada tres casos.
+        output_config: { effort: 'medium' },
         messages: [{ role: 'user', content: userMessage }],
       });
 

@@ -298,6 +298,13 @@ async function start() {
         model: MODEL,
         max_tokens: 400,
         system: tutorSystem(session.summary),
+        // El system del tutor solo pesa ~445 tokens, por debajo del minimo de
+        // 512: cachearlo a solas no haria nada. Lo que si crece es la
+        // conversacion, y se reenvia entera en cada turno. Con el cache_control
+        // de nivel superior, cada turno deja cacheado lo dicho hasta ahi y el
+        // siguiente lo lee en vez de volver a pagarlo. La ganancia crece con la
+        // conversacion, que es justo donde estaba el gasto.
+        cache_control: { type: 'ephemeral' },
         messages: session.messages.map((m) => ({ role: m.role, content: m.content })),
       });
 
