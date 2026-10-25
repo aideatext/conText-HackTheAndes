@@ -9,6 +9,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import type { ChatMessage } from '../../shared/types';
+import { MAX_TURNOS } from '../../shared/limites';
 import { dictationSupported, ttsSupported, useDictation, useReadAloud } from '../speech';
 import MaterialPreview from './MaterialPreview';
 
@@ -21,6 +22,7 @@ export default function Chat({
   disabled,
   error,
   material,
+  turnos,
 }: {
   messages: ChatMessage[];
   draft: string;
@@ -29,9 +31,12 @@ export default function Chat({
   streaming: boolean;
   disabled: boolean;
   error: string | null;
+  /** Turnos ya gastados, para ver venir el tope de la prueba. */
+  turnos: number;
   /** Solo en movil: el material queda fijo sobre la conversacion. */
   material?: { url: string; mime: string | null; nombre: string | null } | null;
 }) {
+  const restantes = Math.max(0, MAX_TURNOS - turnos);
   const [materialAbierto, setMaterialAbierto] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -166,6 +171,15 @@ export default function Chat({
         ))}
         <div ref={endRef} />
       </div>
+
+      {/* El tope se ve venir: avisar recien al chocar con el seria una trampa. */}
+      {restantes <= 5 && (
+        <p className="rounded-chico bg-panel px-3 py-2 text-[11px] leading-relaxed text-tinta-suave ring-1 ring-rojo/30">
+          {restantes > 0
+            ? `Te quedan ${restantes} ${restantes === 1 ? 'turno' : 'turnos'} en esta prueba. Puedes llevarte tu resumen en PDF cuando quieras.`
+            : 'Llegaste al final de esta prueba. Llévate tu resumen en PDF, y si quieres empezar de nuevo pulsa “Borrar todo”.'}
+        </p>
+      )}
 
       {(error || dictado.error) && (
         <p className="rounded-chico bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">

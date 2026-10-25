@@ -8,6 +8,7 @@ import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta, normalizeDelta, sesionExportadaSchema } from './graph.js';
 import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
+import { invitaAEscribir, MAX_TURNOS } from '../shared/limites.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
 import { contrato, entradaSchema, extraerGrafo, guardia, qatomEnabled } from './qatom.js';
@@ -230,7 +231,7 @@ async function start() {
       }
 
       try {
-        const blocks = toContentBlocks(file);
+        const blocks = await toContentBlocks(file);
         const { summary, delta } = await readMaterial(blocks, session.graph, 0);
 
         mergeDelta(session.graph, delta);
@@ -278,6 +279,16 @@ async function start() {
 
     const session = await getSession(sessionId);
     if (!session) return res.status(404).json({ error: 'Sesion no encontrada. Recarga la pagina.' });
+
+    // Se responde antes de abrir el SSE: asi el error llega como JSON y el
+    // cliente lo muestra tal cual, sin tener que inventar un evento de error.
+    if (session.turns >= MAX_TURNOS) {
+      return res.status(403).json({
+        error: invitaAEscribir(
+          `Llegaste a los ${MAX_TURNOS} turnos de esta sesion. Puedes llevarte tu resumen en PDF y, si quieres empezar de nuevo, pulsa "Borrar todo".`,
+        ),
+      });
+    }
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream; charset=utf-8',

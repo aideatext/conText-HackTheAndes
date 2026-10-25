@@ -243,6 +243,7 @@ export default function App() {
       streaming={streaming}
       disabled={!session}
       error={chatError}
+      turnos={metrics.turnos}
       material={
         // En escritorio el material ya esta a la vista en su columna.
         !isDesktop && materialUrl

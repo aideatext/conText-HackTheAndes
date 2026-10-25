@@ -114,6 +114,11 @@ nombre del recurso. El Dockerfile no tiene `ARG` ni `ENV` de secretos.
   escolar entiende. `maxRetries: 3`, timeout de 60 s.
 - `helmet` con CSP, rate limit por IP (30 turnos / 5 min, 20 archivos / 10 min), validación de MIME
   y límite de 10 MB.
+- **Topes de la prueba abierta** ([`shared/limites.ts`](shared/limites.ts)): 15.000 caracteres de
+  texto, 8 páginas de PDF y 20 turnos por sesión. El rate limit frena la ráfaga; esto frena el
+  volumen. Se limita por extensión y turnos, **no por tiempo de reloj**: un cronómetro castigaría
+  justo el pensar despacio que conText existe para provocar. Los tres topes se dicen en pantalla
+  antes de chocar con ellos, y al alcanzarlos se invita a escribir a `first.contact@aideatext.ai`.
 - Sesiones adheridas en el ingress y `min-replicas 1`.
 
 ## 4. Tu sesión es tuya
@@ -191,6 +196,7 @@ node scripts/material.mjs [url]  # el material sigue visible y sobrevive a recar
 node scripts/voz.mjs     [url]   # el tutor habla con Azure Speech
 node scripts/pdf.mjs     [url]   # "Llevarme mi resumen" produce el PDF
 node scripts/sesion.mjs  [url]   # guardar, borrar y retomar la sesión
+npx tsx scripts/limites.mjs [url] # los topes de la prueba (no gasta tokens salvo un control)
 ```
 
 Sin `[url]` corren contra `http://localhost:3000`.

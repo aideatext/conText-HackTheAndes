@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, EyeOff, FileText, Loader2, Upload } from 'lucide-react';
 import MaterialPreview from './MaterialPreview';
+import { MAX_CARACTERES_TEXTO, MAX_PAGINAS_PDF } from '../../shared/limites';
 
 export default function MaterialPanel({
   summary,
@@ -62,7 +63,11 @@ export default function MaterialPanel({
           <>
             <Upload className="mx-auto h-6 w-6 text-tinta-suave/70" />
             <p className="mt-2 text-sm text-tinta-suave">Arrastra una foto, un PDF o un .txt</p>
-            <p className="text-xs text-tinta-suave/70">Hasta 10 MB</p>
+            {/* Los topes de la prueba, dichos antes de elegir el archivo y no despues del error. */}
+            <p className="text-xs text-tinta-suave/70">
+              Hasta 10 MB · {MAX_PAGINAS_PDF} páginas de PDF ·{' '}
+              {MAX_CARACTERES_TEXTO.toLocaleString('es-PE')} caracteres de texto
+            </p>
             <div className="mt-3 flex justify-center gap-2">
               <button
                 onClick={() => fileRef.current?.click()}

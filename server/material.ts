@@ -2,9 +2,11 @@
  * Lectura del material que sube el estudiante: imagen (vision), PDF (documento) o texto.
  * Devuelve un resumen para el tutor y los nodos origen=material.
  */
+import { PDFDocument } from 'pdf-lib';
 import { claude, MODEL, textOf } from './claude.js';
 import { MATERIAL_SYSTEM } from './prompts.js';
 import { materialSchema, normalizeDelta, parseJsonLoose } from './graph.js';
+import { invitaAEscribir, MAX_CARACTERES_TEXTO, MAX_PAGINAS_PDF } from '../shared/limites.js';
 import type { Graph, GraphDelta } from '../shared/types.js';
 
 export const MAX_BYTES = 10 * 1024 * 1024;
@@ -27,12 +29,37 @@ export class UnsupportedMaterial extends Error {
   status = 415;
 }
 
+const miles = (n: number) => n.toLocaleString('es-PE');
+
+/**
+ * De un PDF no sabemos los caracteres sin extraerlo entero, asi que el tope se
+ * cuenta en paginas. Si el archivo no se deja leer aqui no se bloquea: ya pasa
+ * por el tope de 10 MB, y quien decide si lo entiende es el modelo.
+ */
+async function verificarPaginas(buffer: Buffer): Promise<void> {
+  let paginas: number;
+  try {
+    const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
+    paginas = pdf.getPageCount();
+  } catch {
+    return;
+  }
+
+  if (paginas > MAX_PAGINAS_PDF) {
+    throw new UnsupportedMaterial(
+      invitaAEscribir(
+        `Ese PDF tiene ${paginas} paginas y por ahora leemos hasta ${MAX_PAGINAS_PDF}.`,
+      ),
+    );
+  }
+}
+
 /** Convierte el archivo subido en bloques de contenido para Claude. */
-export function toContentBlocks(file: {
+export async function toContentBlocks(file: {
   mimetype: string;
   buffer: Buffer;
   originalname: string;
-}): ContentBlock[] {
+}): Promise<ContentBlock[]> {
   const mime = (file.mimetype || '').split(';')[0].trim().toLowerCase();
   const name = file.originalname.toLowerCase();
 
@@ -50,6 +77,7 @@ export function toContentBlocks(file: {
   }
 
   if (mime === 'application/pdf') {
+    await verificarPaginas(file.buffer);
     return [
       {
         type: 'document',
@@ -59,8 +87,19 @@ export function toContentBlocks(file: {
   }
 
   if (TEXT_TYPES.includes(mime) || name.endsWith('.txt') || name.endsWith('.md')) {
-    const text = file.buffer.toString('utf-8').slice(0, 60_000).trim();
+    const text = file.buffer.toString('utf-8').trim();
     if (!text) throw new UnsupportedMaterial('Ese archivo de texto esta vacio.');
+    // Antes se recortaba en silencio a 60.000 caracteres: el estudiante creia
+    // que conText habia leido todo. Mejor decir que no cabe que fingir que si.
+    if (text.length > MAX_CARACTERES_TEXTO) {
+      throw new UnsupportedMaterial(
+        invitaAEscribir(
+          `Ese texto tiene ${miles(text.length)} caracteres y por ahora leemos hasta ${miles(
+            MAX_CARACTERES_TEXTO,
+          )}, que son unas ${MAX_PAGINAS_PDF} paginas.`,
+        ),
+      );
+    }
     return [{ type: 'text', text }];
   }
 
