@@ -10,8 +10,26 @@ async function jsonOrThrow(res: Response) {
   return res.json();
 }
 
+/**
+ * La etiqueta del enlace de invitacion: context.aideatext.ai/?ref=plan-negocio.
+ * Sirve para saber si una campana trajo gente, no para saber quien es nadie.
+ */
+function refDeLaUrl(): string | null {
+  try {
+    return new URLSearchParams(window.location.search).get('ref');
+  } catch {
+    return null;
+  }
+}
+
 export async function createSession(): Promise<SessionSnapshot> {
-  const snap = (await jsonOrThrow(await fetch('/api/session', { method: 'POST' }))) as SessionSnapshot;
+  const snap = (await jsonOrThrow(
+    await fetch('/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: refDeLaUrl() }),
+    }),
+  )) as SessionSnapshot;
   localStorage.setItem(SESSION_KEY, snap.sessionId);
   return snap;
 }
@@ -68,10 +86,13 @@ export async function retomarSesion(datos: unknown): Promise<SessionSnapshot> {
 }
 
 export interface Stats {
+  /** Acumulado que no caduca: cuenta lo que paso, no lo que sigue guardado. */
   sesiones: number;
   sesionesConTurnos: number;
   turnos: number;
   nodos: number;
+  /** Las que siguen sin caducar ahora mismo. */
+  sesionesVivas: number;
   persistencia: string;
 }
 

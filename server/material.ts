@@ -27,9 +27,25 @@ export type ContentBlock =
 
 export class UnsupportedMaterial extends Error {
   status = 415;
+  /** Distingue "no cabe en la prueba" de "no se que es esto": se miden distinto. */
+  constructor(
+    message: string,
+    readonly tope: 'caracteres' | 'paginas' | null = null,
+  ) {
+    super(message);
+  }
 }
 
 const miles = (n: number) => n.toLocaleString('es-PE');
+
+/** Para medir con que material viene la gente, sin guardar el archivo ni su nombre. */
+export function tipoDeMaterial(mimetype: string): 'foto' | 'pdf' | 'texto' | 'otro' {
+  const mime = (mimetype || '').split(';')[0].trim().toLowerCase();
+  if ((IMAGE_TYPES as readonly string[]).includes(mime)) return 'foto';
+  if (mime === 'application/pdf') return 'pdf';
+  if (TEXT_TYPES.includes(mime)) return 'texto';
+  return 'otro';
+}
 
 /**
  * De un PDF no sabemos los caracteres sin extraerlo entero, asi que el tope se
@@ -50,6 +66,7 @@ async function verificarPaginas(buffer: Buffer): Promise<void> {
       invitaAEscribir(
         `Ese PDF tiene ${paginas} paginas y por ahora leemos hasta ${MAX_PAGINAS_PDF}.`,
       ),
+      'paginas',
     );
   }
 }
@@ -98,6 +115,7 @@ export async function toContentBlocks(file: {
             MAX_CARACTERES_TEXTO,
           )}, que son unas ${MAX_PAGINAS_PDF} paginas.`,
         ),
+        'caracteres',
       );
     }
     return [{ type: 'text', text }];

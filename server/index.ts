@@ -7,8 +7,15 @@ import { claude, friendlyError, MODEL, textOf } from './claude.js';
 import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta, normalizeDelta, sesionExportadaSchema } from './graph.js';
-import { MAX_BYTES, readMaterial, toContentBlocks, UnsupportedMaterial } from './material.js';
+import {
+  MAX_BYTES,
+  readMaterial,
+  tipoDeMaterial,
+  toContentBlocks,
+  UnsupportedMaterial,
+} from './material.js';
 import { invitaAEscribir, MAX_TURNOS } from '../shared/limites.js';
+import { anota, guardiaUso, limpiaRef, resumenDeUso, totalesPublicos } from './uso.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
 import { contrato, entradaSchema, extraerGrafo, guardia, qatomEnabled } from './qatom.js';
@@ -97,8 +104,28 @@ async function start() {
     }
   });
 
+  /**
+   * Contador publico. Sale de la medicion perpetua y no de contar sesiones
+   * vivas: las sesiones caducan a los 7 dias y el numero bajaba solo.
+   */
   app.get('/api/stats', async (_req, res) => {
-    res.json(await stats());
+    const vivas = await stats();
+    res.json({
+      ...(await totalesPublicos()),
+      // Cuantas sesiones siguen sin caducar ahora mismo. Util para ver que el
+      // olvido a 7 dias funciona, y distinto de lo que mide el contador.
+      sesionesVivas: vivas.sesiones,
+      persistencia: vivas.persistencia,
+    });
+  });
+
+  /**
+   * El detalle de uso, con el desglose por ?ref. No es publico: los ref son
+   * nombres de campana y decir a quien se invito seria contar de mas.
+   * Sin USO_TOKEN la ruta responde 404, igual que la de Qatom.
+   */
+  app.get('/api/uso', guardiaUso, async (_req, res) => {
+    res.json(await resumenDeUso());
   });
 
   /**
@@ -133,13 +160,17 @@ async function start() {
     }
   });
 
-  app.post('/api/session', (_req, res) => {
-    const session = newSession();
+  app.post('/api/session', (req, res) => {
+    // El ?ref del enlace de invitacion: dice de que campana vino alguien, no quien es.
+    const session = newSession(limpiaRef(req.body?.ref));
+    void anota('inicio', { ref: session.ref });
     res.json(snapshot(session));
   });
 
   /** Borrar todo: la conversacion, el grafo y el archivo desaparecen del servidor. */
   app.delete('/api/session/:id', async (req, res) => {
+    const session = await getSession(req.params.id);
+    void anota('borrado', { ref: session?.ref ?? null });
     await deleteSession(req.params.id);
     res.status(204).end();
   });
@@ -249,6 +280,7 @@ async function start() {
         session.materialMime = guardado.mime;
 
         await persist(session);
+        void anota('material', { ref: session.ref, detalle: tipoDeMaterial(file.mimetype) });
 
         res.json({
           summary,
@@ -260,6 +292,7 @@ async function start() {
         });
       } catch (err) {
         if (err instanceof UnsupportedMaterial) {
+          if (err.tope) void anota('tope', { ref: session.ref, detalle: err.tope });
           return res.status(415).json({ error: err.message });
         }
         console.error('[material]', err);
@@ -283,6 +316,7 @@ async function start() {
     // Se responde antes de abrir el SSE: asi el error llega como JSON y el
     // cliente lo muestra tal cual, sin tener que inventar un evento de error.
     if (session.turns >= MAX_TURNOS) {
+      void anota('tope', { ref: session.ref, detalle: 'turnos' });
       return res.status(403).json({
         error: invitaAEscribir(
           `Llegaste a los ${MAX_TURNOS} turnos de esta sesion. Puedes llevarte tu resumen en PDF y, si quieres empezar de nuevo, pulsa "Borrar todo".`,
@@ -335,6 +369,9 @@ async function start() {
     }
 
     session.messages.push({ role: 'assistant', content: tutorText });
+    // Se mide antes de incrementar: turns===0 es el primer turno de esta sesion,
+    // y eso -no la carga de la pagina- es alguien usando conText de verdad.
+    if (session.turns === 0) void anota('conversa', { ref: session.ref });
     session.turns += 1;
 
     // Paso 2: extraer el grafo de este turno. Si falla, la conversacion sigue igual.
@@ -348,6 +385,7 @@ async function start() {
     mergeDelta(session.graph, delta);
 
     await persist(session);
+    void anota('turno', { ref: session.ref, nodos: delta.nodes.length });
 
     send('graph_delta', delta);
     send('metrics', computeMetrics(session.graph, session.turns));

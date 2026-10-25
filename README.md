@@ -79,6 +79,7 @@ POST /api/session/retomar    (volver desde el JSON que te llevaste)
 DEL  /api/session/:id        (borrar todo, ahora)
 POST /api/qatom/grafo        (lo que conText vende: texto → grafo, por llamada)
 GET  /api/stats              (uso público)   ·   GET /healthz
+GET  /api/uso                (el detalle por campaña, sólo con token)
 ```
 
 Una sola imagen Docker: Express sirve `dist/` y la API en el mismo origen.
@@ -136,6 +137,32 @@ conText guarda lo mínimo y lo dice sin letra chica, en la propia pantalla:
 Y **"Llevarme mi resumen"** arma un PDF con la foto, el resumen, los indicadores, el grafo, la lista
 de lo que pensó el estudiante y la conversación completa. Se construye entero en el navegador con
 `pdf-lib`: el material no vuelve a salir hacia ningún servicio.
+
+## 4·bis. Saber si alguien lo está usando
+
+El contador público salía de contar las sesiones vivas, y como caducan a los 7 días **el número
+bajaba solo**: justo lo que servía de evidencia de tracción se autodestruía. Ahora el uso se anota
+en una tabla aparte ([`server/uso.ts`](server/uso.ts)) que el barrido no toca.
+
+Un evento es una marca de conteo: `inicio`, `conversa` (el primer turno de una sesión, que es
+cuando alguien la usa de verdad y no sólo la abre), `turno`, `material`, `borrado` y `tope`.
+**No se guarda el `sessionId`, ni el texto, ni el nombre del archivo.** Si se guardara el id,
+"Borrar todo" dejaría un rastro atado al identificador que el navegador todavía tiene, y la promesa
+de §4 sería falsa por un tecnicismo.
+
+```
+GET /api/stats                                 público: el acumulado y las sesiones vivas
+GET /api/uso   Authorization: Bearer <token>   el desglose por campaña y por día
+```
+
+Para saber si probó **ese** prospecto sin saber quién es, el enlace de invitación lleva una
+etiqueta: `context.aideatext.ai/?ref=plan-negocio`. Es un nombre de campaña, no un dato de la
+persona; se normaliza a `[a-z0-9-]` y se corta a 24 caracteres. El desglose por `ref` **no** es
+público — decir en el pie a quién se invitó sería contar de más —, así que `/api/uso` responde 404
+sin `USO_TOKEN`, igual que la ruta de pago de Qatom.
+
+> Los eventos son perpetuos a propósito: **no se prueba contra producción.** Una pasada de las
+> suites inflaría el contador para siempre, y ese contador existe para mostrar gente real.
 
 ## 5. Lo que conText vende en Qatom
 
@@ -197,6 +224,7 @@ node scripts/voz.mjs     [url]   # el tutor habla con Azure Speech
 node scripts/pdf.mjs     [url]   # "Llevarme mi resumen" produce el PDF
 node scripts/sesion.mjs  [url]   # guardar, borrar y retomar la sesión
 npx tsx scripts/limites.mjs [url] # los topes de la prueba (no gasta tokens salvo un control)
+npx tsx scripts/uso.mjs          # la medición perpetua (sólo local, por diseño)
 ```
 
 Sin `[url]` corren contra `http://localhost:3000`.
@@ -227,6 +255,15 @@ autenticación con Entra ID. Y el token de Qatom va como secreto del Container A
 ```powershell
 az containerapp secret set -n context-aideatext -g rg-context-hackandes --secrets qatom-token=<token>
 az containerapp update     -n context-aideatext -g rg-context-hackandes --set-env-vars QATOM_TOKEN=secretref:qatom-token
+```
+
+Lo mismo para el token que abre `/api/uso`. La tabla `uso` se crea sola al arrancar y la identidad
+administrada ya tiene *Storage Table Data Contributor* sobre la cuenta, así que no hace falta
+ningún rol nuevo:
+
+```powershell
+az containerapp secret set -n context-aideatext -g rg-context-hackandes --secrets uso-token=<token>
+az containerapp update     -n context-aideatext -g rg-context-hackandes --set-env-vars USO_TOKEN=secretref:uso-token
 ```
 
 ### Dominio propio

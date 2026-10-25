@@ -76,7 +76,33 @@ suba nada, no en letra chica.
 
 El objetivo es que la experiencia sea **segura y anónima**, y que se note que lo es.
 
+## 3. Saber quién lo está usando — hecho (25 oct 2026)
+
+La pregunta era dónde mirar. La respuesta era: en ningún sitio útil.
+
+Lo que había: `/api/stats` con cuatro números anónimos que además **bajaban solos**, porque salían
+de contar sesiones vivas y las sesiones caducan a los 7 días. Log Analytics está activo, pero el
+servidor sólo escribe arranque y errores: ni un turno quedaba registrado.
+
+- [x] **Medición perpetua** en [`server/uso.ts`](../server/uso.ts), tabla aparte que el barrido no
+      toca. Eventos: `inicio`, `conversa`, `turno`, `material`, `borrado`, `tope`.
+- [x] **Sin `sessionId`, sin texto, sin nombre de archivo.** Guardar el id dejaría, tras "Borrar
+      todo", un rastro atado al identificador que el navegador conserva.
+- [x] **`?ref=` en el enlace de invitación**, normalizado a `[a-z0-9-]` y 24 caracteres.
+- [x] **`GET /api/uso`** con `USO_TOKEN`, 404 sin él. Desglose por campaña y por día.
+- [x] Arreglado de paso: `stats()` y `sweepExpired()` listaban la tabla **sin filtrar partición**,
+      así que cualquier fila nueva se habría contado como sesión o barrido como tal.
+- [x] Suite: `npx tsx scripts/uso.mjs` (se niega a correr contra producción).
+
+**Falta desplegarlo:** poner `USO_TOKEN` como secreto del Container App y reconstruir la imagen.
+Hasta entonces, en producción `/api/uso` responde 404 y el contador sigue siendo el viejo.
+
+**Lo que aún no se mide:** "Llevarme mi resumen" se arma entero en el navegador, así que el
+servidor no se entera. Contarlo pediría una ruta de aviso nueva; es la señal de interés más fuerte
+que hay y probablemente valga la pena.
+
 ---
 
-> Nota: el contador público (`/api/stats`) cuenta usuarios reales. Si se prueba contra
-> https://context.aideatext.ai hay que borrar esas sesiones después.
+> Nota: el contador público (`/api/stats`) cuenta usuarios reales, y ahora los eventos **no
+> caducan**: una prueba contra https://context.aideatext.ai lo inflaría para siempre. Las suites
+> van contra local; `scripts/uso.mjs` se niega a hacer otra cosa.

@@ -21,6 +21,8 @@ export interface Session {
   materialBlob: string | null;
   materialMime: string | null;
   turns: number;
+  /** Etiqueta del enlace de invitacion (?ref=...). No es un dato de la persona. */
+  ref: string | null;
 }
 
 const MAX_MESSAGES = 60;
@@ -49,7 +51,7 @@ if (endpoint) {
   console.log('[store] sin AZURE_TABLES_ENDPOINT: las sesiones viven solo en memoria');
 }
 
-export function newSession(): Session {
+export function newSession(ref: string | null = null): Session {
   const now = new Date().toISOString();
   const session: Session = {
     sessionId: randomUUID(),
@@ -62,6 +64,7 @@ export function newSession(): Session {
     materialBlob: null,
     materialMime: null,
     turns: 0,
+    ref,
   };
   memory.set(session.sessionId, session);
   void persist(session);
@@ -166,7 +169,9 @@ export async function sweepExpired(): Promise<number> {
     try {
       await tableReady;
       for await (const e of table.listEntities<{ updatedAt?: string }>({
-        queryOptions: { select: ['RowKey', 'updatedAt'] },
+        // Filtrado por particion: sin esto el barrido recorreria cualquier otra
+        // fila que llegue a esta tabla y la trataria como una sesion.
+        queryOptions: { filter: `PartitionKey eq '${PARTITION}'`, select: ['RowKey', 'updatedAt'] },
       })) {
         if (Date.parse(e.updatedAt ?? '') < limite) {
           await deleteSession(String(e.rowKey));
@@ -196,7 +201,12 @@ export async function stats() {
       for await (const e of table.listEntities<{
         turns?: number;
         nodes?: number;
-      }>({ queryOptions: { select: ['RowKey', 'turns', 'nodes'] } })) {
+      }>({
+        queryOptions: {
+          filter: `PartitionKey eq '${PARTITION}'`,
+          select: ['RowKey', 'turns', 'nodes'],
+        },
+      })) {
         counted.add(String(e.rowKey));
         sesiones++;
         turnos += e.turns ?? 0;
