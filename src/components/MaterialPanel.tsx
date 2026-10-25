@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Camera, FileText, Loader2, Upload } from 'lucide-react';
+import { Camera, EyeOff, FileText, Loader2, Upload } from 'lucide-react';
 import MaterialPreview from './MaterialPreview';
 
 export default function MaterialPanel({
@@ -94,6 +94,21 @@ export default function MaterialPanel({
           className="hidden"
           onChange={(e) => handle(e.target.files?.[0])}
         />
+      </div>
+
+      {/*
+        Se dice antes de que suba nada, no despues: hay quien trae documentos de trabajo.
+        Que pasa con lo subido lo cuenta MiSesion, al pie de esta misma columna; aqui no se repite.
+      */}
+      <div className="rounded-chico bg-panel px-3 py-2.5 text-[11px] leading-relaxed text-tinta-suave ring-1 ring-rojo/30">
+        <p className="flex items-start gap-1.5 font-medium text-tinta">
+          <EyeOff className="mt-px h-3.5 w-3.5 shrink-0 text-azul" />
+          Antes de subir: quítale los datos sensibles.
+        </p>
+        <p className="mt-1">
+          Nombres de personas, montos, direcciones, razones sociales. conText piensa igual de bien
+          sin ellos. Si lo que traes es un texto, súbelo en <strong>.txt</strong>.
+        </p>
       </div>
 
       {error && (

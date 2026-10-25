@@ -339,6 +339,16 @@ export default function App() {
               conectaron {stats.nodos} ideas.
             </span>
           )}
+          {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
+          <span className="text-tinta-suave/80">
+            · Cualquier consulta:{' '}
+            <a
+              href="mailto:first.contact@aideatext.ai"
+              className="font-medium text-azul hover:underline"
+            >
+              first.contact@aideatext.ai
+            </a>
+          </span>
         </div>
         <div className="mt-1.5 flex items-center justify-center gap-2">
           <img

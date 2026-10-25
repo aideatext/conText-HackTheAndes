@@ -21,8 +21,10 @@ export default function MiSesion({
   const archivoRef = useRef<HTMLInputElement>(null);
   const [confirmando, setConfirmando] = useState(false);
 
+  // El filo rojo —el del logotipo— hermana esta caja con el aviso de arriba:
+  // lo que toca tus datos se reconoce de un vistazo.
   return (
-    <section className="space-y-2 rounded-medio bg-panel p-3 ring-1 ring-borde">
+    <section className="space-y-2 rounded-medio bg-panel p-3 ring-1 ring-rojo/30">
       <h3 className="flex items-center gap-1.5 text-xs font-semibold text-tinta">
         <ShieldCheck className="h-3.5 w-3.5 text-azul" />
         Tu sesión es tuya
