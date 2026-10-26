@@ -286,7 +286,11 @@ az containerapp hostname bind -n context-aideatext -g rg-context-hackandes --hos
 Si el dominio tiene registros CAA, deben permitir a `digicert.com`, que es quien emite el
 certificado gestionado de Azure.
 
-## 9. Origen
+## 9. Origen, y cómo se llegó hasta aquí
+
+[`docs/bitacora.md`](docs/bitacora.md) es el registro del trabajo: las tres jornadas, las decisiones
+y su porqué, y las que se tomaron y luego se desandaron. Lo que falta está en
+[`docs/TODO.md`](docs/TODO.md).
 
 Derivado de [aideatext/Discovery-conText](https://github.com/aideatext/Discovery-conText)
 (commit `c6d7372`). Se conservó la idea del grafo de fuerzas en D3 y la fusión incremental de nodos.
