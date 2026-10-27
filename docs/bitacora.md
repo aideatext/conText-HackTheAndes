@@ -234,7 +234,7 @@ sesión" cubre al estudiante que vuelve. El cliente de Claude quedó preparado p
 
 | | |
 |---|---|
-| Despliegue | Render, plan Free, desde `main` en GitHub |
+| Despliegue | Render, plan Free, desde `main` en GitHub · `context.aideatext.ai` → `context-v2` |
 | Modelo | `claude-opus-5` por la API de Anthropic (créditos de Claude for Startups) |
 | Credenciales | `ANTHROPIC_API_KEY` como secreto de Render. En Azure, federación sin claves |
 | Persistencia | Memoria. Sesiones y material se pierden al dormirse el servicio |

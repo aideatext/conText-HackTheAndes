@@ -65,10 +65,20 @@ niega a correr contra un despliegue.
 
 ## 4. El dominio
 
-Mientras `context.aideatext.ai` siga apuntando a Azure, la demo vive en `*.onrender.com`. Para
-moverlo: en Render, *Settings → Custom Domains*, y en Cloudflare el CNAME que indique Render con
-**el proxy desactivado (nube gris)**, por lo mismo que en Azure: el proxy puede bufferear el SSE y el
-tutor dejaría de escribirse palabra por palabra.
+`context.aideatext.ai` apunta a Render desde el 27 oct 2026 (servicio `context-v2`, también en
+`https://context-v2.onrender.com`). Así se hizo, y así se rehace:
+
+1. En Render, *Settings → Custom Domains → Add* `context.aideatext.ai`.
+2. En Cloudflare, el CNAME `context` → `context-v2.onrender.com`, **con el proxy desactivado (nube
+   gris)**, por lo mismo que en Azure: el proxy puede bufferear el SSE y el tutor dejaría de
+   escribirse palabra por palabra.
+3. Render verifica y emite el certificado (Google Trust Services, que el CAA del dominio permite
+   vía `pki.goog`). Lo renueva solo.
+
+Verificado al mover: `/healthz` con `auth: "entorno"` y un turno transmitido en vivo por el dominio.
+
+El TXT `asuid.context` de Cloudflare era la verificación de Azure: sobra mientras no se vuelva.
+Para volver a Azure (§5), el CNAME `context` regresa al Container App y ese TXT se recrea.
 
 ---
 
