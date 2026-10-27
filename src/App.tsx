@@ -66,7 +66,8 @@ export default function App() {
   const [exportando, setExportando] = useState(false);
   const [sesionOcupada, setSesionOcupada] = useState(false);
 
-  const hayAlgo = messages.length > 0 || graph.nodes.length > 0;
+  // El material cuenta: aunque no deje nodos en el grafo, es un archivo en el servidor.
+  const hayAlgo = messages.length > 0 || graph.nodes.length > 0 || Boolean(materialName);
 
   function cargarSnapshot(snap: SessionSnapshot) {
     setSession(snap);
