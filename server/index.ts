@@ -3,7 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import multer from 'multer';
 import rateLimit from 'express-rate-limit';
-import { claude, friendlyError, MODEL, textOf } from './claude.js';
+import { AUTH, claude, friendlyError, MODEL, textOf } from './claude.js';
 import { tutorSystem } from './prompts.js';
 import { extractDelta } from './extract.js';
 import { computeMetrics, mergeDelta, normalizeDelta, sesionExportadaSchema } from './graph.js';
@@ -73,6 +73,7 @@ async function start() {
     res.json({
       ok: true,
       model: MODEL,
+      auth: AUTH,
       voz: voiceEnabled,
       qatom: qatomEnabled,
       uptime: Math.round(process.uptime()),
@@ -403,7 +404,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`conText escuchando en http://localhost:${PORT} (modelo ${MODEL})`);
+    console.log(`conText escuchando en http://localhost:${PORT} (modelo ${MODEL}, credencial ${AUTH})`);
   });
 
   // Caducidad de las sesiones: al arrancar y cada seis horas.

@@ -1,4 +1,5 @@
-# Sin ARG ni ENV de claves: la credencial en Azure es la Managed Identity del Container App.
+# Sin ARG ni ENV de claves: la credencial llega en tiempo de ejecucion (secreto de Render,
+# o Managed Identity + federacion en Azure). Nunca dentro de la imagen.
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./

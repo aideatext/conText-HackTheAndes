@@ -4,7 +4,10 @@
 ese material, y ve en tiempo real el grafo de las ideas que está conectando — distinguiendo qué
 vino del material y qué construyó él.**
 
-Hack the Andes 2026 · Track 03 (Educación Escolar) · Claude Opus 5 en Azure AI Foundry
+Hack the Andes 2026 · Track 03 (Educación Escolar) · Claude Opus 5 por la API de Anthropic, en Render
+
+> Desde el 27 oct 2026 corre en Render, sin Azure. Despliegue y cómo volver a Azure:
+> [`docs/despliegue-render.md`](docs/despliegue-render.md).
 
 🔗 **App: https://context.aideatext.ai**
 📊 **Uso real:** `/api/stats` · ❤️ **Salud:** `/healthz`
@@ -92,7 +95,7 @@ que el `origin` de cada idea sea honesto.
 
 | | Local | Producción |
 |---|---|---|
-| Foundry | `az login` → `DefaultAzureCredential` | Managed Identity + rol *Cognitive Services User* |
+| API de Claude | `ant auth login` | Managed Identity → Workload Identity Federation ([guía](docs/claude-api-federacion.md)) |
 | Table Storage | `az login` | Managed Identity + rol *Storage Table Data Contributor* |
 | Blob Storage | `az login` | Managed Identity + rol *Storage Blob Data Contributor* |
 | AI Speech | `az login` | Managed Identity + rol *Cognitive Services Speech User* |
@@ -208,8 +211,9 @@ Dos decisiones que importan:
 ## 7. Correr en local
 
 ```bash
-cp .env.example .env     # completa ANTHROPIC_FOUNDRY_RESOURCE
-az login                 # de aquí sale la credencial; no hay claves
+cp .env.example .env     # en local no hace falta completar nada
+ant auth login           # credencial de Claude; no hay claves
+az login                 # credencial de Azure (Table, Blob, Speech)
 npm install
 npm run dev              # http://localhost:3000
 ```
@@ -237,12 +241,12 @@ az acr build -r <registro> -t context-aideatext:v1 .
 az containerapp create -n context-aideatext -g rg-context-hackandes `
   --environment context-aideatext-env --image <registro>.azurecr.io/context-aideatext:v1 `
   --registry-server <registro>.azurecr.io --registry-identity system --system-assigned `
-  --ingress external --target-port 3000 --min-replicas 1 --max-replicas 3 `
-  --env-vars ANTHROPIC_FOUNDRY_RESOURCE=<recurso> CLAUDE_DEPLOYMENT=claude-opus-5 NODE_ENV=production
+  --ingress external --target-port 3000 --min-replicas 0 --max-replicas 3 `
+  --env-vars CLAUDE_MODEL=claude-opus-5 NODE_ENV=production
+# + las variables ANTHROPIC_* de la federación: docs/claude-api-federacion.md
 
 # roles (sin claves)
 $p = az containerapp show -n context-aideatext -g rg-context-hackandes --query identity.principalId -o tsv
-az role assignment create --assignee $p --role "Cognitive Services User"       --scope <id-del-recurso-foundry>
 az role assignment create --assignee $p --role "Storage Table Data Contributor" --scope <id-del-storage>
 az role assignment create --assignee $p --role "Storage Blob Data Contributor"  --scope <id-del-storage>
 az role assignment create --assignee $p --role "Cognitive Services Speech User" --scope <id-del-speech>

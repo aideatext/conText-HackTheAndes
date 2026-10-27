@@ -280,7 +280,7 @@ export default function App() {
         <Marca />
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-tinta-suave xl:block">
-            Hack the Andes · Claude en Azure AI Foundry
+            Hack the Andes · Claude Opus 5
           </span>
           <button
             onClick={descargarResumen}

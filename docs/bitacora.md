@@ -204,6 +204,21 @@ barrido habría intentado borrarla.
 
 ---
 
+## Fuera de Azure (27 oct 2026)
+
+Los créditos de Claude for Startups cambian la cuenta: el modelo era casi toda la factura y ahora
+lo pagan los créditos, así que lo que queda es un contenedor chico. Se evaluó AWS (guía en
+[`migracion-aws.md`](migracion-aws.md)), Cloud Run, Hugging Face y el hosting de Hostinger que ya
+estaba pagado (su plan Premium no corre Node.js y vence en febrero). Ganó **Render Free**: gratis,
+despliega desde GitHub y usa el `Dockerfile` tal cual.
+
+El precio es la persistencia y la voz peruana. Se aceptó porque ninguna de las dos pedía código
+nuevo: sin sus variables `AZURE_*`, conText ya caía a memoria y a la voz del navegador, y "Guardar
+sesión" cubre al estudiante que vuelve. El cliente de Claude quedó preparado para volver a Azure
+**sin claves**, con federación de identidad: [`despliegue-render.md`](despliegue-render.md) §5.
+
+---
+
 ## Las decisiones que no se tomaron
 
 | Lo que no se hizo | Por qué |
@@ -219,10 +234,11 @@ barrido habría intentado borrarla.
 
 | | |
 |---|---|
-| Despliegue | Azure Container Apps, `rg-context-hackandes`, `eastus` |
-| Imagen / revisión | `context-aideatext:v11` · `context-aideatext--0000012` |
-| Modelo | `claude-opus-5` en AI Foundry (`manuelvarale-7544-resource`) |
-| Credenciales | Identidad administrada en todo. Cero claves |
+| Despliegue | Render, plan Free, desde `main` en GitHub |
+| Modelo | `claude-opus-5` por la API de Anthropic (créditos de Claude for Startups) |
+| Credenciales | `ANTHROPIC_API_KEY` como secreto de Render. En Azure, federación sin claves |
+| Persistencia | Memoria. Sesiones y material se pierden al dormirse el servicio |
+| Versión en Azure | Etiqueta `azure-foundry` (Container Apps, Foundry, Table, Blob, Speech) |
 | Suites | `smoke`, `material`, `voz`, `pdf`, `sesion`, `limites`, `uso` |
 
 Lo que falta está en [`docs/TODO.md`](TODO.md). Lo más relevante: **"Llevarme mi resumen" no se

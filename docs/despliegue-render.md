@@ -1,0 +1,118 @@
+# conText en Render, y cómo volver a Azure
+
+Guía de trabajo. Desde el 27 oct 2026 conText corre en **Render (plan Free)**, desplegado desde
+GitHub, y el modelo va por la **API de Anthropic** con los créditos de Claude for Startups. Azure
+queda fuera, pero el código no lo olvida: volver es cuestión de variables de entorno.
+
+---
+
+## 1. Qué cambió y qué se pierde
+
+| | En Azure | En Render Free |
+|---|---|---|
+| Modelo | Claude en AI Foundry | API de Anthropic (créditos de startup) |
+| Credencial de Claude | Managed Identity, cero claves | `ANTHROPIC_API_KEY` como secreto de Render |
+| Sesiones y medición de uso | Table Storage | Memoria: se pierden al dormirse o redesplegar |
+| Material subido | Blob Storage, caduca a 7 días | Memoria |
+| Voz | AI Speech `es-PE-CamilaNeural` | La del navegador (el respaldo que ya existía) |
+| Costo del hosting | Container Apps | 0 |
+| Arranque | Inmediato | Se duerme sin visitas; la primera tarda en despertar |
+
+Nada de esto toca el código de sesiones, material o voz: cada pieza ya caía a memoria o al navegador
+cuando faltaba su variable `AZURE_*`. Por eso volver a Azure no requiere programar.
+
+Lo que el estudiante no pierde: **"Guardar sesión"** baja el JSON y **retomar** lo reconstruye,
+aunque el servidor se haya reiniciado.
+
+## 2. El servicio en Render
+
+*New → Web Service*, conectado al repo de GitHub.
+
+| Campo | Valor |
+|---|---|
+| Branch | `main` (cada push despliega solo) |
+| Language | Docker. El `Dockerfile` sirve sin cambios |
+| Region | Virginia u Ohio, las más cercanas a Lima |
+| Instance type | Free |
+| Health check path | `/healthz` |
+
+El puerto no se configura: Render pasa su `PORT` y el servidor lo lee.
+
+**Variables de entorno:**
+
+| Nombre | Valor |
+|---|---|
+| `ANTHROPIC_API_KEY` | Clave de la Console, en el workspace `context-demo` |
+| `CLAUDE_MODEL` | `claude-opus-5` |
+| `NODE_ENV` | `production` |
+| `USO_TOKEN` | Opcional: abre `/api/uso` |
+
+Ninguna `AZURE_*` y ninguna `ANTHROPIC_ENTRA_AUDIENCE`.
+
+> **La clave sólo vive en Render.** Ni en el repo, ni en la imagen, ni en un chat. El workspace
+> `context-demo` lleva **límite de gasto**: es una demo abierta y los créditos se acaban. Si la
+> clave se filtra, se revoca en la Console y se pega una nueva en Render.
+
+## 3. Verificación
+
+- [ ] `GET /healthz` → `ok: true`, `auth: "entorno"`, `voz: false`
+- [ ] Un turno en la app → el tutor responde palabra por palabra (el SSE pasa por el proxy de Render)
+- [ ] Subir una foto → el material se ve en la conversación
+- [ ] `node scripts/smoke.mjs https://<servicio>.onrender.com`
+
+Las suites `voz.mjs` y `uso.mjs` no aplican: sin Speech no hay voz del servidor, y `uso.mjs` se
+niega a correr contra un despliegue.
+
+## 4. El dominio
+
+Mientras `context.aideatext.ai` siga apuntando a Azure, la demo vive en `*.onrender.com`. Para
+moverlo: en Render, *Settings → Custom Domains*, y en Cloudflare el CNAME que indique Render con
+**el proxy desactivado (nube gris)**, por lo mismo que en Azure: el proxy puede bufferear el SSE y el
+tutor dejaría de escribirse palabra por palabra.
+
+---
+
+## 5. Volver a Azure
+
+Dos caminos, según qué se quiera recuperar.
+
+### A. Azure con la API de Anthropic (recomendado)
+
+El código de este commit ya lo soporta. Se conserva la API de Anthropic (los créditos) y vuelven la
+persistencia, la voz peruana y las cero claves.
+
+1. Federación de identidad: seguir [`claude-api-federacion.md`](claude-api-federacion.md). Deja
+   `ANTHROPIC_ENTRA_AUDIENCE` y los IDs `ANTHROPIC_*` en el Container App.
+2. Las variables de Azure que ya existían, con los mismos valores que tenía el Container App y
+   sus roles de Managed Identity (README §8): `AZURE_TABLES_ENDPOINT`,
+   `AZURE_STORAGE_BLOB_ENDPOINT` y `AZURE_SPEECH_ENDPOINT`. Para verlas antes de borrar nada:
+
+   ```bash
+   az containerapp show -n context-aideatext -g rg-context-hackandes \
+     --query "properties.template.containers[0].env" -o table
+   ```
+
+3. **Sin** `ANTHROPIC_API_KEY`: con `ANTHROPIC_ENTRA_AUDIENCE` definida no se usa, pero no tiene
+   por qué estar.
+4. `/healthz` → `auth: "federacion-azure"`, `voz: true`.
+
+### B. Azure con AI Foundry, tal como estaba
+
+Para volver exactamente a la versión del hackathon, con el modelo facturado en Azure:
+
+```bash
+git checkout azure-foundry      # etiqueta del último commit en Foundry (a2b89ac)
+```
+
+Y desplegar como dice el README de esa versión (`ANTHROPIC_FOUNDRY_RESOURCE`,
+`CLAUDE_DEPLOYMENT`, rol *Cognitive Services User*). Lo único que cambia respecto de hoy es
+[`server/claude.ts`](../server/claude.ts) y la dependencia `@anthropic-ai/foundry-sdk`: si sólo se
+quiere el cliente de Foundry sobre el código actual, basta con traer ese archivo de la etiqueta.
+
+| Pieza | Volver = |
+|---|---|
+| Modelo en Foundry | `server/claude.ts` + `@anthropic-ai/foundry-sdk` de `azure-foundry` |
+| Sesiones | `AZURE_TABLES_ENDPOINT` |
+| Material | `AZURE_STORAGE_BLOB_ENDPOINT` |
+| Voz peruana | `AZURE_SPEECH_ENDPOINT` |
+| Hosting | Container Apps, README §8 |
