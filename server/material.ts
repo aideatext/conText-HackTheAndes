@@ -146,7 +146,7 @@ export async function readMaterial(
       type: 'text' as const,
       text:
         'Analiza este material y devuelve el JSON con summary, nodes y links. ' +
-        `Escribe el summary y las etiquetas en ${idioma === 'en' ? 'ingles' : 'espanol'}.`,
+        `Escribe el summary y las etiquetas en ${idioma === 'en' ? 'INGLES' : 'espanol'}, aunque el material este en otro idioma.`,
     },
   ];
 

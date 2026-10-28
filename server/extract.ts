@@ -8,6 +8,7 @@ import { claude, MODEL, textOf } from './claude.js';
 import { EXTRACTOR_SYSTEM, extractorUserMessage } from './prompts.js';
 import { normalizeDelta, parseJsonLoose } from './graph.js';
 import type { Graph, GraphDelta } from '../shared/types.js';
+import type { Idioma } from '../shared/idioma.js';
 
 export async function extractDelta(
   graph: Graph,
@@ -15,10 +16,12 @@ export async function extractDelta(
   tutorText: string,
   turn: number,
   hasMaterial: boolean,
+  idioma: Idioma = 'es',
 ): Promise<GraphDelta> {
   // Solo las etiquetas e ids: el extractor no necesita el grafo completo.
   const existing = graph.nodes.map((n) => ({ id: n.id, label: n.label }));
-  const userMessage = extractorUserMessage(studentText, tutorText, existing);
+  // El grafo es parte de la interfaz: va en su idioma, como el resumen del material.
+  const userMessage = extractorUserMessage(studentText, tutorText, existing, idioma);
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {

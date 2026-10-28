@@ -1,4 +1,5 @@
 /** Prompts del tutor socratico y del extractor de grafo. */
+import type { Idioma } from '../shared/idioma.js';
 
 export function tutorSystem(summary: string): string {
   const contexto = summary
@@ -34,7 +35,7 @@ Reglas:
 - source y target deben ser ids de nodos nuevos o existentes.
 - Maximo 6 nodos nuevos. Prefiere pocas ideas buenas a muchas vagas.
 - No inventes conceptos que no aparecen en el turno. Si no hay nada nuevo, devuelve {"nodes":[],"links":[]}.
-- Las etiquetas son cortas (1 a 5 palabras), en el idioma en que escribe el estudiante (espanol o ingles).`;
+- Las etiquetas son cortas (1 a 5 palabras), en el idioma que se te indique en el mensaje.`;
 
 export const MATERIAL_SYSTEM = `Eres el analizador de material de conText, para estudiantes de secundaria en el Peru.
 
@@ -70,6 +71,7 @@ export function extractorUserMessage(
   studentText: string,
   tutorText: string,
   existingNodes: Array<{ id: string; label: string }>,
+  idioma: Idioma = 'es',
 ): string {
   const lista = existingNodes.length
     ? existingNodes.map((n) => `- ${n.id}: ${n.label}`).join('\n')
@@ -88,5 +90,6 @@ Respuesta del tutor:
 ${tutorText}
 """
 
-Devuelve el JSON con las ideas nuevas de este turno y sus enlaces.`;
+Devuelve el JSON con las ideas nuevas de este turno y sus enlaces.
+Escribe las etiquetas en ${idioma === 'en' ? 'INGLES' : 'espanol'}, aunque el turno o los nodos existentes esten en otro idioma.`;
 }

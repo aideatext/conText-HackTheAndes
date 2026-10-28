@@ -383,6 +383,7 @@ async function start() {
       tutorText,
       session.turns,
       Boolean(session.materialName),
+      idioma,
     );
     mergeDelta(session.graph, delta);
 
