@@ -16,6 +16,8 @@ import {
 } from './material.js';
 import { invitaAEscribir, MAX_TURNOS } from '../shared/limites.js';
 import { idiomaDe, MENSAJES } from './mensajes.js';
+import { idiomaTarjeta, paginasPorIdioma } from './meta.js';
+import { readFileSync } from 'node:fs';
 import { anota, guardiaUso, limpiaRef, resumenDeUso, totalesPublicos } from './uso.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
@@ -397,8 +399,14 @@ async function start() {
   });
 
   if (isProd) {
-    app.use(express.static('dist', { maxAge: '1h' }));
-    app.get('/{*splat}', (_req, res) => res.sendFile('index.html', { root: 'dist' }));
+    // La pagina sale con los metadatos del idioma del enlace (?lang=en|pt|fr):
+    // los rastreadores de redes no ejecutan JavaScript. Por eso static no sirve index.html.
+    const paginas = paginasPorIdioma(readFileSync('dist/index.html', 'utf-8'));
+    app.use(express.static('dist', { maxAge: '1h', index: false }));
+    app.get('/{*splat}', (req, res) => {
+      res.set('Cache-Control', 'public, max-age=300');
+      res.type('html').send(paginas[idiomaTarjeta(req.query.lang)]);
+    });
   } else {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({ server: { middlewareMode: true }, appType: 'spa' });

@@ -234,6 +234,12 @@ Threads, LinkedIn, Slack, Telegram, Discord), la tarjeta grande de X, datos estr
 `WebApplication` y un `site.webmanifest`. La imagen (`public/og-image.png`) sale de
 `scripts/og-imagen.mjs`, con las letras y el logo de la marca.
 
+**Una tarjeta por idioma, servida por el servidor.** Los rastreadores de redes no ejecutan
+JavaScript, así que el selector de idioma no les llega: con `?lang=en|pt|fr` es el servidor el que
+entrega el HTML con título, descripción, imagen (`og-image-{es,en,pt,fr}.png`) y `og:url` del idioma
+([`server/meta.ts`](../server/meta.ts)). Portugués y francés tienen tarjeta antes que interfaz: esos
+enlaces abren conText en español, y su descripción lo dice ("Disponível em espanhol e inglês").
+
 ---
 
 ## Las decisiones que no se tomaron

@@ -19,9 +19,14 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- La misma pagina en los dos idiomas: ?lang=en abre la interfaz en ingles. -->
+    <!--
+      ?lang=en abre la interfaz en ingles. Con ?lang=en|pt|fr el servidor cambia ademas
+      estas etiquetas por las del idioma (server/meta.ts): aqui va la version en espanol.
+    -->
     <link rel="alternate" hreflang="es" href="https://context.aideatext.ai/" />
     <link rel="alternate" hreflang="en" href="https://context.aideatext.ai/?lang=en" />
+    <link rel="alternate" hreflang="pt" href="https://context.aideatext.ai/?lang=pt" />
+    <link rel="alternate" hreflang="fr" href="https://context.aideatext.ai/?lang=fr" />
     <link rel="alternate" hreflang="x-default" href="https://context.aideatext.ai/" />
 
     <!--
@@ -37,8 +42,8 @@
       property="og:description"
       content="Sube tu material, conversa con un tutor socrático que no hace la tarea por ti y mira en vivo el grafo de las ideas que conectas. En español y en inglés."
     />
-    <meta property="og:image" content="https://context.aideatext.ai/og-image.png" />
-    <meta property="og:image:secure_url" content="https://context.aideatext.ai/og-image.png" />
+    <meta property="og:image" content="https://context.aideatext.ai/og-image-es.png" />
+    <meta property="og:image:secure_url" content="https://context.aideatext.ai/og-image-es.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -56,7 +61,7 @@
       name="twitter:description"
       content="Sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que conectas. En español y en inglés."
     />
-    <meta name="twitter:image" content="https://context.aideatext.ai/og-image.png" />
+    <meta name="twitter:image" content="https://context.aideatext.ai/og-image-es.png" />
     <meta
       name="twitter:image:alt"
       content="conText: piensa tus ideas en voz alta y míralas conectarse. Un grafo de ideas en azul, rojo y gris."
@@ -71,7 +76,7 @@
         "alternateName": "conText · AIdeaText",
         "url": "https://context.aideatext.ai/",
         "description": "Sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que vas conectando. Think your ideas out loud and watch them connect.",
-        "image": "https://context.aideatext.ai/og-image.png",
+        "image": "https://context.aideatext.ai/og-image-es.png",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "Web",
         "inLanguage": ["es", "en"],
