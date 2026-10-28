@@ -217,6 +217,23 @@ nuevo: sin sus variables `AZURE_*`, conText ya caía a memoria y a la voz del na
 sesión" cubre al estudiante que vuelve. El cliente de Claude quedó preparado para volver a Azure
 **sin claves**, con federación de identidad: [`despliegue-render.md`](despliegue-render.md) §5.
 
+## En inglés, y con vista previa al compartir (28 oct 2026)
+
+**Dos idiomas, dos reglas distintas.** La interfaz va en el idioma que se elige (`?lang=en`, luego
+lo último elegido, luego el del navegador; selector ES/EN en la cabecera) y viaja al servidor en la
+cabecera `X-Idioma`: con ella llegan en ese idioma el resumen del material, sus nodos y los errores.
+El tutor no mira esa cabecera: **contesta en el idioma en que le escriben**. Un estudiante con la
+interfaz en español que escribe en inglés recibe inglés, y la lectura en voz alta elige la voz por
+el idioma de cada respuesta, no por el de la interfaz.
+
+El idioma del material va en el mensaje, no en el *system*: el *system* sigue idéntico para todos y
+no pierde la caché.
+
+**Al compartir el enlace** se ve una tarjeta: Open Graph (Facebook, Instagram, WhatsApp, Messenger,
+Threads, LinkedIn, Slack, Telegram, Discord), la tarjeta grande de X, datos estructurados
+`WebApplication` y un `site.webmanifest`. La imagen (`public/og-image.png`) sale de
+`scripts/og-imagen.mjs`, con las letras y el logo de la marca.
+
 ---
 
 ## Las decisiones que no se tomaron

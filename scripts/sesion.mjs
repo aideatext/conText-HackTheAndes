@@ -17,7 +17,12 @@ const check = (ok, msg) => {
 };
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+// La interfaz sigue el idioma del navegador: la suite busca textos en espanol.
+const ctx = await browser.newContext({
+  locale: 'es-PE',
+  viewport: { width: 1440, height: 900 },
+  acceptDownloads: true,
+});
 const page = await ctx.newPage();
 page.on('pageerror', (e) => {
   fallos++;

@@ -1,5 +1,6 @@
 /** Indicadores del grafo en lenguaje del estudiante, sin jerga. */
 import type { Metrics } from '../../shared/types';
+import { useT } from '../i18n';
 
 /**
  * La monoespaciada es para las cifras, que se comparan en columna. La idea
@@ -32,12 +33,13 @@ function Tile({
 }
 
 export default function MetricsPanel({ metrics }: { metrics: Metrics }) {
+  const t = useT().metricas;
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <Tile value={metrics.ideasEstudiante} label="ideas que conectaste tú" />
-      <Tile value={metrics.enlacesTotales} label="conexiones entre ideas" />
-      <Tile value={metrics.ideaMasCentral ?? '—'} label="la idea que más conecta" texto />
-      <Tile value={`${metrics.porcentajeAislados}%`} label="ideas aún sueltas" />
+      <Tile value={metrics.ideasEstudiante} label={t.mias} />
+      <Tile value={metrics.enlacesTotales} label={t.conexiones} />
+      <Tile value={metrics.ideaMasCentral ?? '—'} label={t.central} texto />
+      <Tile value={`${metrics.porcentajeAislados}%`} label={t.sueltas} />
     </div>
   );
 }

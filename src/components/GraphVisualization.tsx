@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import type { Graph, GraphLink, GraphNode, NodeType, Origin } from '../../shared/types';
+import { useT } from '../i18n';
 
 /**
  * Los tres origenes, con la paleta de AIdeaText. El azul y el rojo son los
@@ -16,29 +17,6 @@ export const ORIGIN_COLOR: Record<Origin, string> = {
   material: '#4e5a68', // tinta suave
   estudiante: '#0b7ec5', // azul del logotipo
   tutor: '#ae0025', // rojo del logotipo
-};
-
-export const ORIGIN_LABEL: Record<Origin, string> = {
-  material: 'Del material',
-  estudiante: 'Mis ideas',
-  tutor: 'Del tutor',
-};
-
-export const TYPE_LABEL: Record<NodeType, string> = {
-  concepto: 'concepto',
-  afirmacion: 'afirmación',
-  evidencia: 'evidencia',
-  ejemplo: 'ejemplo',
-  pregunta: 'pregunta',
-};
-
-const RELATION_LABEL: Record<string, string> = {
-  apoya: 'apoya',
-  contradice: 'contradice',
-  causa: 'causa',
-  ejemplifica: 'ejemplifica',
-  se_relaciona_con: 'se relaciona con',
-  responde_a: 'responde a',
 };
 
 type SimNode = GraphNode & d3.SimulationNodeDatum;
@@ -72,6 +50,7 @@ export default function GraphVisualization({
   onlyMine: boolean;
   svgRef?: React.RefObject<SVGSVGElement | null>;
 }) {
+  const textos = useT();
   const localRef = useRef<SVGSVGElement>(null);
   const svgRef = externalRef ?? localRef;
   // Conservamos las posiciones entre renders para que el grafo no "salte" al crecer.
@@ -168,7 +147,7 @@ export default function GraphVisualization({
       .attr('stroke-width', 1.8)
       .attr('marker-end', (d) => `url(#arrow-${d.origin})`);
 
-    link.append('title').text((d) => RELATION_LABEL[d.relation] ?? d.relation);
+    link.append('title').text((d) => textos.relacion[d.relation] ?? d.relation);
 
     const node = g
       .append('g')
@@ -225,7 +204,7 @@ export default function GraphVisualization({
       .attr('stroke-width', 3)
       .text((d) => truncate(d.label));
 
-    node.append('title').text((d) => `${d.label}\n${TYPE_LABEL[d.type]} · ${ORIGIN_LABEL[d.origin]}`);
+    node.append('title').text((d) => `${d.label}\n${textos.tipo[d.type]} · ${textos.origen[d.origin]}`);
 
     simulation.on('tick', () => {
       link
@@ -252,13 +231,13 @@ export default function GraphVisualization({
       }
       simulation.stop();
     };
-  }, [graph, onlyMine, svgRef]);
+  }, [graph, onlyMine, svgRef, textos]);
 
   return (
     <svg
       ref={svgRef}
       className="h-full w-full cursor-grab active:cursor-grabbing"
-      aria-label="Grafo de las ideas conectadas"
+      aria-label={textos.grafo.aria}
     />
   );
 }

@@ -7,7 +7,8 @@
  */
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import type { ChatMessage, Graph, Metrics } from '../shared/types';
-import { ORIGIN_LABEL, TYPE_LABEL } from './components/GraphVisualization';
+import { LOCALE } from '../shared/idioma';
+import { idiomaActual, textos } from './i18n';
 
 const A4: [number, number] = [595.28, 841.89];
 const MARGEN = 48;
@@ -98,6 +99,8 @@ export interface DatosExport {
 }
 
 export async function exportarPdf(d: DatosExport): Promise<void> {
+  const tx = textos();
+  const t = tx.pdf;
   const pdf = await PDFDocument.create();
   const normal = await pdf.embedFont(StandardFonts.Helvetica);
   const negrita = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -129,17 +132,21 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   // --- Portada ---
   escribir('conText', { size: 24, font: negrita });
   separar(2);
-  escribir('Las ideas que conectaste', { size: 13, font: negrita, color: SUAVE });
+  escribir(t.subtitulo, { size: 13, font: negrita, color: SUAVE });
   separar(4);
   escribir(
-    new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' }),
+    new Date().toLocaleDateString(LOCALE[idiomaActual()], {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
     { size: 9, color: SUAVE },
   );
   separar(18);
 
   // --- Material ---
   if (d.materialName || d.summary) {
-    escribir('Tu material', { size: 13, font: negrita });
+    escribir(t.material, { size: 13, font: negrita });
     separar(6);
     if (d.materialName) {
       escribir(d.materialName, { size: 9, color: SUAVE });
@@ -169,18 +176,20 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   }
 
   // --- Indicadores ---
-  escribir('Cómo quedó tu mapa', { size: 13, font: negrita });
+  escribir(t.mapa, { size: 13, font: negrita });
   separar(6);
   escribir(
-    `Ideas que conectaste tú: ${d.metrics.ideasEstudiante}  ·  ` +
-      `Conexiones: ${d.metrics.enlacesTotales}  ·  ` +
-      `Ideas en total: ${d.metrics.nodosTotales}  ·  ` +
-      `Aún sueltas: ${d.metrics.porcentajeAislados}%`,
+    t.indicadores({
+      mias: d.metrics.ideasEstudiante,
+      enlaces: d.metrics.enlacesTotales,
+      total: d.metrics.nodosTotales,
+      sueltas: d.metrics.porcentajeAislados,
+    }),
     { size: 10 },
   );
   if (d.metrics.ideaMasCentral) {
     separar(2);
-    escribir(`La idea que más conecta: ${d.metrics.ideaMasCentral}`, { size: 10 });
+    escribir(t.central(d.metrics.ideaMasCentral), { size: 10 });
   }
   separar(16);
 
@@ -193,7 +202,7 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
       const w = img.width * escala;
       const h = img.height * escala;
       espacio(h + 26);
-      escribir('Tu grafo de ideas', { size: 13, font: negrita });
+      escribir(t.grafo, { size: 13, font: negrita });
       separar(6);
       page.drawImage(img, { x: MARGEN + (ANCHO - w) / 2, y: y - h, width: w, height: h });
       y -= h + 16;
@@ -204,13 +213,13 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   const mias = d.graph.nodes.filter((n) => n.origin === 'estudiante');
   if (mias.length) {
     espacio(60);
-    escribir('Lo que pensaste tú', { size: 13, font: negrita, color: AZUL });
+    escribir(t.pensaste, { size: 13, font: negrita, color: AZUL });
     separar(6);
     const etiqueta = new Map(d.graph.nodes.map((n) => [n.id, n.label]));
     for (const n of mias) {
-      escribir(`• ${n.label}  (${TYPE_LABEL[n.type]})`, { size: 10 });
+      escribir(`• ${n.label}  (${tx.tipo[n.type]})`, { size: 10 });
       for (const l of d.graph.links.filter((l) => l.source === n.id)) {
-        escribir(`   ${l.relation.replace(/_/g, ' ')} → ${etiqueta.get(l.target) ?? l.target}`, {
+        escribir(`   ${tx.relacion[l.relation] ?? l.relation} → ${etiqueta.get(l.target) ?? l.target}`, {
           size: 9,
           color: SUAVE,
           sangria: 12,
@@ -223,11 +232,11 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   // --- Conversación ---
   if (d.messages.length) {
     nuevaPagina();
-    escribir('Tu conversación', { size: 13, font: negrita });
+    escribir(t.conversacion, { size: 13, font: negrita });
     separar(8);
     for (const m of d.messages) {
       if (!m.content.trim()) continue;
-      escribir(m.role === 'user' ? 'Tú' : 'Tutor', {
+      escribir(m.role === 'user' ? t.tu : t.tutor, {
         size: 9,
         font: negrita,
         color: m.role === 'user' ? AZUL : SUAVE,
@@ -241,7 +250,7 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   const total = pdf.getPageCount();
   pdf.getPages().forEach((p, i) => {
     p.drawText(
-      aWinAnsi(`conText · no te califica y no redacta por ti · ${i + 1}/${total}`),
+      aWinAnsi(t.pie(i + 1, total)),
       { x: MARGEN, y: 24, size: 8, font: normal, color: SUAVE },
     );
   });
@@ -250,9 +259,8 @@ export async function exportarPdf(d: DatosExport): Promise<void> {
   const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'mi-resumen-context.pdf';
+  a.download = t.archivo;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-export { ORIGIN_LABEL };

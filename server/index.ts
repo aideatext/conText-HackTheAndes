@@ -15,6 +15,7 @@ import {
   UnsupportedMaterial,
 } from './material.js';
 import { invitaAEscribir, MAX_TURNOS } from '../shared/limites.js';
+import { idiomaDe, MENSAJES } from './mensajes.js';
 import { anota, guardiaUso, limpiaRef, resumenDeUso, totalesPublicos } from './uso.js';
 import { loadMaterial, saveMaterial } from './blob.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
@@ -66,7 +67,7 @@ async function start() {
     limit: 30,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    message: { error: 'Demasiados mensajes seguidos. Espera unos minutos.' },
+    message: (req: express.Request) => ({ error: MENSAJES[idiomaDe(req)].demasiadosMensajes }),
   });
 
   app.get('/healthz', (_req, res) => {
@@ -184,7 +185,7 @@ async function start() {
   app.post('/api/session/retomar', async (req, res) => {
     const parsed = sesionExportadaSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ error: 'Ese archivo no es una sesión de conText.' });
+      return res.status(400).json({ error: MENSAJES[idiomaDe(req)].noEsSesion });
     }
 
     const session = newSession();
@@ -223,7 +224,7 @@ async function start() {
     limit: 20,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    message: { error: 'Subiste muchos archivos seguidos. Espera unos minutos.' },
+    message: (req: express.Request) => ({ error: MENSAJES[idiomaDe(req)].demasiadosArchivos }),
   });
 
   /** Devuelve el archivo original de la sesion (el contenedor de blobs es privado). */
@@ -241,13 +242,13 @@ async function start() {
   });
 
   app.post('/api/material', materialLimiter, (req, res) => {
+    const idioma = idiomaDe(req);
+    const m = MENSAJES[idioma];
     upload.single('file')(req, res, async (uploadErr: any) => {
       if (uploadErr) {
         const tooBig = uploadErr.code === 'LIMIT_FILE_SIZE';
         return res.status(tooBig ? 413 : 400).json({
-          error: tooBig
-            ? 'Ese archivo pesa mas de 10 MB. Prueba con una foto mas liviana o un PDF mas corto.'
-            : 'No pude recibir el archivo. Intenta de nuevo.',
+          error: tooBig ? m.archivoPesado : m.noRecibiArchivo,
         });
       }
 
@@ -259,12 +260,12 @@ async function start() {
 
       const session = await getSession(sessionId);
       if (!session) {
-        return res.status(404).json({ error: 'Sesion no encontrada. Recarga la pagina.' });
+        return res.status(404).json({ error: m.sesionNoEncontrada });
       }
 
       try {
-        const blocks = await toContentBlocks(file);
-        const { summary, delta } = await readMaterial(blocks, session.graph, 0);
+        const blocks = await toContentBlocks(file, idioma);
+        const { summary, delta } = await readMaterial(blocks, session.graph, 0, idioma);
 
         mergeDelta(session.graph, delta);
         session.summary = summary;
@@ -297,31 +298,31 @@ async function start() {
           return res.status(415).json({ error: err.message });
         }
         console.error('[material]', err);
-        res.status(502).json({ error: friendlyError(err) });
+        res.status(502).json({ error: friendlyError(err, idioma) });
       }
     });
   });
 
   app.post('/api/turn', turnLimiter, async (req, res) => {
+    const idioma = idiomaDe(req);
+    const m = MENSAJES[idioma];
     const { sessionId, text } = req.body ?? {};
     if (typeof sessionId !== 'string' || typeof text !== 'string' || !text.trim()) {
       return res.status(400).json({ error: 'Faltan sessionId o text.' });
     }
     if (text.length > 4000) {
-      return res.status(413).json({ error: 'Tu mensaje es demasiado largo.' });
+      return res.status(413).json({ error: m.mensajeLargo });
     }
 
     const session = await getSession(sessionId);
-    if (!session) return res.status(404).json({ error: 'Sesion no encontrada. Recarga la pagina.' });
+    if (!session) return res.status(404).json({ error: m.sesionNoEncontrada });
 
     // Se responde antes de abrir el SSE: asi el error llega como JSON y el
     // cliente lo muestra tal cual, sin tener que inventar un evento de error.
     if (session.turns >= MAX_TURNOS) {
       void anota('tope', { ref: session.ref, detalle: 'turnos' });
       return res.status(403).json({
-        error: invitaAEscribir(
-          `Llegaste a los ${MAX_TURNOS} turnos de esta sesion. Puedes llevarte tu resumen en PDF y, si quieres empezar de nuevo, pulsa "Borrar todo".`,
-        ),
+        error: invitaAEscribir(m.topeTurnos, idioma),
       });
     }
 
@@ -363,7 +364,7 @@ async function start() {
       tutorText = textOf(final.content as any) || tutorText;
     } catch (err) {
       console.error('[turn] tutor:', err);
-      send('error', { message: friendlyError(err) });
+      send('error', { message: friendlyError(err, idioma) });
       session.messages.pop();
       send('done', {});
       return res.end();

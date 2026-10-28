@@ -18,6 +18,8 @@ import { AvisoNvidia, Marca } from './components/Marca';
 import MiSesion from './components/MiSesion';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
+import SelectorIdioma from './components/SelectorIdioma';
+import { useT } from './i18n';
 
 const EMPTY_METRICS: Metrics = {
   ideasEstudiante: 0,
@@ -45,6 +47,7 @@ function useIsDesktop() {
 }
 
 export default function App() {
+  const tx = useT();
   const [session, setSession] = useState<SessionSnapshot | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [graph, setGraph] = useState<Graph>({ nodes: [], links: [] });
@@ -96,7 +99,7 @@ export default function App() {
     );
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mi-sesion-context.json';
+    a.download = tx.archivoSesion;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -111,7 +114,7 @@ export default function App() {
       setMaterialUrl(null);
       setMaterialMime(null);
     } catch (e: any) {
-      setChatError(e?.message ?? 'Ese archivo no es una sesión de conText.');
+      setChatError(e?.message ?? tx.errores.noEsSesion);
     } finally {
       setSesionOcupada(false);
     }
@@ -125,7 +128,7 @@ export default function App() {
       cargarSnapshot(await createSession());
       setChatError(null);
     } catch {
-      setChatError('No pude borrar la sesión. Intenta de nuevo.');
+      setChatError(tx.errores.noBorre);
     } finally {
       setSesionOcupada(false);
     }
@@ -143,7 +146,7 @@ export default function App() {
         setMaterialUrl(snap.materialUrl);
         setMaterialMime(snap.materialMime);
       })
-      .catch((e) => setChatError(e?.message ?? 'No pude conectar con el servidor.'));
+      .catch((e) => setChatError(e?.message ?? tx.errores.sinServidor));
   }, []);
 
   // Contador publico de uso: se refresca al cargar y al cerrar cada turno.
@@ -188,7 +191,7 @@ export default function App() {
         onError: (message) => setChatError(message),
       });
     } catch {
-      setChatError('Se corto la conexion. Intenta de nuevo.');
+      setChatError(tx.errores.conexionCortada);
     } finally {
       setStreaming(false);
     }
@@ -208,7 +211,7 @@ export default function App() {
       applyDelta(res.graph_delta);
       setMetrics(res.metrics);
     } catch (e: any) {
-      setMaterialError(e?.message ?? 'No pude leer ese archivo.');
+      setMaterialError(e?.message ?? tx.errores.noLeiArchivo);
     } finally {
       setMaterialBusy(false);
     }
@@ -269,7 +272,7 @@ export default function App() {
         svg: svgRef.current,
       });
     } catch (e: any) {
-      setChatError('No pude armar el PDF. Intenta de nuevo.');
+      setChatError(tx.errores.noPdf);
     } finally {
       setExportando(false);
     }
@@ -279,10 +282,11 @@ export default function App() {
     <div className="flex h-full flex-col">
       <header className="flex items-center justify-between gap-3 border-b border-borde bg-papel px-4 py-3">
         <Marca />
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <span className="hidden text-xs text-tinta-suave xl:block">
             Claude Opus 5
           </span>
+          <SelectorIdioma />
           <button
             onClick={descargarResumen}
             disabled={exportando || (graph.nodes.length === 0 && messages.length === 0)}
@@ -294,8 +298,8 @@ export default function App() {
               <Download className="h-4 w-4" />
             )}
             {/* En un telefono el rotulo no cabe al lado de la marca: queda el icono. */}
-            <span className="hidden sm:inline">Llevarme mi resumen</span>
-            <span className="sr-only sm:hidden">Llevarme mi resumen</span>
+            <span className="hidden sm:inline">{tx.cabecera.resumen}</span>
+            <span className="sr-only sm:hidden">{tx.cabecera.resumen}</span>
           </button>
         </div>
       </header>
@@ -310,7 +314,7 @@ export default function App() {
                 tab === t ? 'border-b-2 border-azul text-tinta' : 'text-tinta-suave'
               }`}
             >
-              {t === 'chat' ? 'Conversación' : t === 'grafo' ? 'Grafo' : 'Material'}
+              {tx.pestanas[t]}
             </button>
           ))}
         </nav>
@@ -332,23 +336,17 @@ export default function App() {
 
       <footer className="border-t border-borde bg-panel px-4 py-2.5">
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-[11px] text-tinta-suave">
-          <span>
-            Qué <strong>no</strong> hace conText: no te califica y no redacta por ti.
-          </span>
+          <span>{tx.pie.queNoHace}</span>
           {stats && stats.sesionesConTurnos > 0 && (
             <span className="text-tinta-suave/80">
-              · {stats.sesionesConTurnos} estudiantes ya conversaron aquí, {stats.turnos} veces, y
-              conectaron {stats.nodos} ideas.
+              {tx.pie.contador(stats.sesionesConTurnos, stats.turnos, stats.nodos)}
             </span>
           )}
           {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
           <span className="text-tinta-suave/80">
-            · Cualquier consulta:{' '}
-            <a
-              href="mailto:first.contact@aideatext.ai"
-              className="font-medium text-azul hover:underline"
-            >
-              first.contact@aideatext.ai
+            · {tx.pie.consulta}{' '}
+            <a href={`mailto:${tx.contacto}`} className="font-medium text-azul hover:underline">
+              {tx.contacto}
             </a>
           </span>
         </div>

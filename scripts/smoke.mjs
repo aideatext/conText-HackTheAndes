@@ -21,7 +21,8 @@ const check = (cond, msg) => {
 const browser = await chromium.launch();
 
 async function run(name, contextOptions, { mobile }) {
-  const ctx = await browser.newContext(contextOptions);
+  // La interfaz sigue el idioma del navegador: la suite busca textos en espanol.
+  const ctx = await browser.newContext({ locale: 'es-PE', ...contextOptions });
   const page = await ctx.newPage();
   page.on('pageerror', (e) => {
     failures++;

@@ -1,6 +1,13 @@
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
+import { CABECERA_IDIOMA } from '../shared/idioma';
+import { idiomaActual } from './i18n';
 
 const SESSION_KEY = 'context.sessionId';
+
+/** El idioma de la interfaz viaja en cada peticion: el servidor contesta los errores en el. */
+function conIdioma(extra: Record<string, string> = {}): Record<string, string> {
+  return { ...extra, [CABECERA_IDIOMA]: idiomaActual() };
+}
 
 async function jsonOrThrow(res: Response) {
   if (!res.ok) {
@@ -26,7 +33,7 @@ export async function createSession(): Promise<SessionSnapshot> {
   const snap = (await jsonOrThrow(
     await fetch('/api/session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: conIdioma({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ ref: refDeLaUrl() }),
     }),
   )) as SessionSnapshot;
@@ -76,7 +83,7 @@ export async function retomarSesion(datos: unknown): Promise<SessionSnapshot> {
   const snap = (await jsonOrThrow(
     await fetch('/api/session/retomar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: conIdioma({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(datos),
     }),
   )) as SessionSnapshot;
@@ -114,7 +121,7 @@ export async function uploadMaterial(sessionId: string, file: File): Promise<Mat
   const form = new FormData();
   form.append('sessionId', sessionId);
   form.append('file', file);
-  const res = await fetch('/api/material', { method: 'POST', body: form });
+  const res = await fetch('/api/material', { method: 'POST', body: form, headers: conIdioma() });
   return (await jsonOrThrow(res)) as MaterialResult;
 }
 
@@ -130,7 +137,7 @@ export interface TurnHandlers {
 export async function sendTurn(sessionId: string, text: string, h: TurnHandlers): Promise<void> {
   const res = await fetch('/api/turn', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: conIdioma({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ sessionId, text }),
   });
 

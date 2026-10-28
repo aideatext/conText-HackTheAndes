@@ -5,6 +5,7 @@
 import { useRef, useState } from 'react';
 import { FolderOpen, Loader2, Save, ShieldCheck, Trash2 } from 'lucide-react';
 import Plegable from './Plegable';
+import { useT } from '../i18n';
 
 export default function MiSesion({
   onGuardar,
@@ -19,6 +20,7 @@ export default function MiSesion({
   ocupado: boolean;
   hayAlgo: boolean;
 }) {
+  const t = useT().sesion;
   const archivoRef = useRef<HTMLInputElement>(null);
   const [confirmando, setConfirmando] = useState(false);
 
@@ -28,16 +30,12 @@ export default function MiSesion({
   return (
     <Plegable
       aviso
-      titulo="Tu sesión es tuya"
+      titulo={t.titulo}
       icono={<ShieldCheck className="h-3.5 w-3.5 text-azul" />}
       abierto={!hayAlgo}
     >
       <div className="space-y-2">
-        <p className="text-[11px] leading-snug text-tinta-suave">
-          Si pulsas <strong>Borrar todo</strong>, tu conversación, tu grafo y tu archivo desaparecen
-          del servidor en el momento. Si no lo pulsas, se borran solos a los 7 días. Guárdate el JSON
-          y podrás retomar la conversación cuando quieras.
-        </p>
+        <p className="text-[11px] leading-snug text-tinta-suave">{t.explica}</p>
 
         <div className="flex flex-wrap gap-1.5">
           <button
@@ -45,7 +43,7 @@ export default function MiSesion({
             disabled={!hayAlgo || ocupado}
             className="flex items-center gap-1.5 rounded-chico bg-white px-2.5 py-1.5 text-[11px] font-medium text-tinta ring-1 ring-borde transition-colors hover:bg-papel disabled:opacity-40"
           >
-            <Save className="h-3.5 w-3.5" /> Guardar sesión
+            <Save className="h-3.5 w-3.5" /> {t.guardar}
           </button>
 
           <button
@@ -58,7 +56,7 @@ export default function MiSesion({
             ) : (
               <FolderOpen className="h-3.5 w-3.5" />
             )}
-            Retomar
+            {t.retomar}
           </button>
 
           {confirmando ? (
@@ -70,13 +68,13 @@ export default function MiSesion({
                 }}
                 className="rounded-chico bg-rojo px-2.5 py-1.5 text-[11px] font-semibold text-white"
               >
-                Sí, borrar todo
+                {t.confirmar}
               </button>
               <button
                 onClick={() => setConfirmando(false)}
                 className="rounded-chico px-2 py-1.5 text-[11px] text-tinta-suave underline"
               >
-                Cancelar
+                {t.cancelar}
               </button>
             </span>
           ) : (
@@ -85,7 +83,7 @@ export default function MiSesion({
               disabled={!hayAlgo || ocupado}
               className="flex items-center gap-1.5 rounded-chico bg-white px-2.5 py-1.5 text-[11px] font-medium text-rojo ring-1 ring-rojo/30 transition-colors hover:bg-rojo/5 disabled:opacity-40"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Borrar todo
+              <Trash2 className="h-3.5 w-3.5" /> {t.borrar}
             </button>
           )}
         </div>

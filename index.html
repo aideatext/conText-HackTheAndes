@@ -4,14 +4,89 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#fbf8f3" />
+    <title>conText · AIdeaText</title>
+    <meta
+      name="description"
+      content="conText, de AIdeaText: sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que vas conectando. En español y en inglés."
+    />
+    <meta name="application-name" content="conText" />
+    <meta name="apple-mobile-web-app-title" content="conText" />
+    <meta name="author" content="AIdeaText" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- La misma pagina en los dos idiomas: ?lang=en abre la interfaz en ingles. -->
+    <link rel="alternate" hreflang="es" href="https://context.aideatext.ai/" />
+    <link rel="alternate" hreflang="en" href="https://context.aideatext.ai/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://context.aideatext.ai/" />
+
+    <!--
+      Open Graph: lo leen Facebook, Instagram, WhatsApp, Messenger y Threads (Meta),
+      y tambien LinkedIn, Slack, Telegram, Discord y casi todo lo demas.
+      Las URL van absolutas: los rastreadores no resuelven rutas relativas.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="conText · AIdeaText" />
+    <meta property="og:url" content="https://context.aideatext.ai/" />
+    <meta property="og:title" content="conText · Piensa tus ideas en voz alta y míralas conectarse" />
     <meta
-      name="description"
-      content="conText, de AIdeaText: sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que vas conectando."
+      property="og:description"
+      content="Sube tu material, conversa con un tutor socrático que no hace la tarea por ti y mira en vivo el grafo de las ideas que conectas. En español y en inglés."
     />
-    <title>conText · AIdeaText</title>
+    <meta property="og:image" content="https://context.aideatext.ai/og-image.png" />
+    <meta property="og:image:secure_url" content="https://context.aideatext.ai/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="conText: piensa tus ideas en voz alta y míralas conectarse. Un grafo de ideas en azul, rojo y gris."
+    />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- X (Twitter): tarjeta grande con la misma imagen. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="conText · Piensa tus ideas en voz alta y míralas conectarse" />
+    <meta
+      name="twitter:description"
+      content="Sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que conectas. En español y en inglés."
+    />
+    <meta name="twitter:image" content="https://context.aideatext.ai/og-image.png" />
+    <meta
+      name="twitter:image:alt"
+      content="conText: piensa tus ideas en voz alta y míralas conectarse. Un grafo de ideas en azul, rojo y gris."
+    />
+
+    <!-- Datos estructurados para buscadores. No se ejecuta: es un bloque de datos. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "conText",
+        "alternateName": "conText · AIdeaText",
+        "url": "https://context.aideatext.ai/",
+        "description": "Sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que vas conectando. Think your ideas out loud and watch them connect.",
+        "image": "https://context.aideatext.ai/og-image.png",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "inLanguage": ["es", "en"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "AIdeaText",
+          "url": "https://aideatext.ai",
+          "logo": "https://context.aideatext.ai/img/logo-aideatext.png",
+          "email": "first.contact@aideatext.ai"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Download, Image as ImageIcon } from 'lucide-react';
 import type { Graph, Metrics, Origin } from '../../shared/types';
-import GraphVisualization, { ORIGIN_COLOR, ORIGIN_LABEL } from './GraphVisualization';
+import GraphVisualization, { ORIGIN_COLOR } from './GraphVisualization';
+import { useT } from '../i18n';
 import { svgAPng } from '../export';
 import MetricsPanel from './MetricsPanel';
 
@@ -23,6 +24,8 @@ export default function GraphPanel({
   metrics: Metrics;
   svgRef: React.RefObject<SVGSVGElement | null>;
 }) {
+  const textos = useT();
+  const t = textos.grafo;
   const [onlyMine, setOnlyMine] = useState(false);
 
   const empty = graph.nodes.length === 0;
@@ -30,7 +33,7 @@ export default function GraphPanel({
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="titular text-base text-tinta">Tus ideas conectadas</h2>
+        <h2 className="titular text-base text-tinta">{t.titulo}</h2>
         <div className="flex items-center gap-2">
           <label className="flex cursor-pointer items-center gap-2 rounded-full bg-panel px-3 py-1.5 text-xs font-medium ring-1 ring-borde">
             <input
@@ -39,17 +42,17 @@ export default function GraphPanel({
               onChange={(e) => setOnlyMine(e.target.checked)}
               className="accent-azul"
             />
-            Mis conexiones
+            {t.misConexiones}
           </label>
           <button
             onClick={() =>
               download(
                 new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' }),
-                'mi-grafo-context.json',
+                `${t.archivo}.json`,
               )
             }
             disabled={empty}
-            title="Descargar el grafo como JSON"
+            title={t.bajarJson}
             className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
@@ -58,10 +61,10 @@ export default function GraphPanel({
             onClick={async () => {
               if (!svgRef.current) return;
               const png = await svgAPng(svgRef.current);
-              if (png) download(new Blob([png as BlobPart], { type: 'image/png' }), 'mi-grafo-context.png');
+              if (png) download(new Blob([png as BlobPart], { type: 'image/png' }), `${t.archivo}.png`);
             }}
             disabled={empty}
-            title="Descargar el grafo como imagen PNG"
+            title={t.bajarPng}
             className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
           >
             <ImageIcon className="h-3.5 w-3.5" />
@@ -72,7 +75,7 @@ export default function GraphPanel({
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-medio bg-white ring-1 ring-borde">
         {empty ? (
           <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-tinta-suave/70">
-            Aquí vas a ver, en vivo, las ideas que conectes mientras conversas.
+            {t.vacio}
           </p>
         ) : (
           <GraphVisualization graph={graph} onlyMine={onlyMine} svgRef={svgRef} />
@@ -89,7 +92,7 @@ export default function GraphPanel({
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: ORIGIN_COLOR[o] }}
                 />
-                {ORIGIN_LABEL[o]}
+                {textos.origen[o]}
               </span>
             ))}
           </div>

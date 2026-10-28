@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
+import { useT } from '../i18n';
 
 let pdfjsCargado: Promise<typeof import('pdfjs-dist')> | null = null;
 function cargarPdfjs() {
@@ -27,6 +28,7 @@ export default function MaterialPreview({
   nombre: string | null;
   className?: string;
 }) {
+  const t = useT().vista;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [estado, setEstado] = useState<'cargando' | 'listo' | 'error'>('cargando');
   const esPdf = mime === 'application/pdf';
@@ -70,7 +72,7 @@ export default function MaterialPreview({
     return (
       <img
         src={url}
-        alt={nombre ? `Material: ${nombre}` : 'Material que subiste'}
+        alt={t.alt(nombre)}
         className={`w-full rounded-chico object-contain ring-1 ring-borde ${className}`}
       />
     );
@@ -87,12 +89,12 @@ export default function MaterialPreview({
         )}
         {estado === 'error' && (
           <div className="flex items-center gap-2 p-4 text-xs text-tinta-suave">
-            <FileText className="h-4 w-4" /> No pude dibujar la primera página.
+            <FileText className="h-4 w-4" /> {t.noDibujo}
           </div>
         )}
         {estado === 'listo' && (
           <span className="absolute right-1 bottom-1 rounded bg-papel/90 px-1.5 py-0.5 text-[10px] text-tinta-suave ring-1 ring-borde">
-            página 1
+            {t.pagina1}
           </span>
         )}
       </div>
@@ -105,7 +107,7 @@ export default function MaterialPreview({
       className={`flex items-center gap-2 rounded-chico bg-panel p-3 text-xs text-tinta-suave ring-1 ring-borde ${className}`}
     >
       <FileText className="h-4 w-4 shrink-0" />
-      <span className="truncate">{nombre ?? 'Texto'}</span>
+      <span className="truncate">{nombre ?? t.texto}</span>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { oidcFederationProvider } from '@anthropic-ai/sdk/lib/credentials/oidc-federation';
 import type { AccessTokenProvider } from '@anthropic-ai/sdk/lib/credentials/types';
 import { DefaultAzureCredential } from '@azure/identity';
+import type { Idioma } from '../shared/idioma.js';
+import { MENSAJES } from './mensajes.js';
 
 export const MODEL =
   process.env.CLAUDE_MODEL ?? process.env.CLAUDE_DEPLOYMENT ?? 'claude-opus-5';
@@ -63,19 +65,12 @@ export function textOf(content: Array<{ type: string; text?: string }>): string 
 }
 
 /** Mensaje amable para el estudiante cuando la API de Claude falla. */
-export function friendlyError(err: unknown): string {
+export function friendlyError(err: unknown, idioma: Idioma = 'es'): string {
+  const m = MENSAJES[idioma];
   const msg = String((err as Error)?.message ?? err);
-  if (/429|rate.?limit/i.test(msg)) {
-    return 'Hay mucha gente usando conText en este momento. Espera unos segundos y vuelve a enviar tu mensaje.';
-  }
-  if (/529|overloaded|503/i.test(msg)) {
-    return 'El tutor esta saturado por un momento. Intenta de nuevo en unos segundos.';
-  }
-  if (/401|403|PermissionDenied|authentication|credentials/i.test(msg)) {
-    return 'No pude conectarme al tutor por un problema de permisos del servidor. Avisa al equipo.';
-  }
-  if (/timeout|ETIMEDOUT|aborted/i.test(msg)) {
-    return 'El tutor se demoro demasiado. Vuelve a intentarlo.';
-  }
-  return 'Algo fallo al conectar con el tutor. Intenta de nuevo en unos segundos.';
+  if (/429|rate.?limit/i.test(msg)) return m.muchaGente;
+  if (/529|overloaded|503/i.test(msg)) return m.saturado;
+  if (/401|403|PermissionDenied|authentication|credentials/i.test(msg)) return m.permisos;
+  if (/timeout|ETIMEDOUT|aborted/i.test(msg)) return m.demora;
+  return m.fallo;
 }

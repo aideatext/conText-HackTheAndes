@@ -15,6 +15,8 @@
  * frena la rafaga, este frena el volumen.
  */
 
+import type { Idioma } from './idioma.js';
+
 /** Texto plano: ~15.000 caracteres son unas 8 paginas. */
 export const MAX_CARACTERES_TEXTO = 15_000;
 
@@ -27,6 +29,8 @@ export const MAX_TURNOS = 20;
 export const CONTACTO = 'first.contact@aideatext.ai';
 
 /** El mismo cierre en los tres mensajes: el tope no es un muro, es una invitacion. */
-export function invitaAEscribir(motivo: string): string {
-  return `${motivo} conText es una prueba abierta. Si necesitas trabajar con algo mas grande, escribenos a ${CONTACTO}.`;
+export function invitaAEscribir(motivo: string, idioma: Idioma = 'es'): string {
+  return idioma === 'en'
+    ? `${motivo} conText is an open trial. If you need to work with something bigger, write to us at ${CONTACTO}.`
+    : `${motivo} conText es una prueba abierta. Si necesitas trabajar con algo mas grande, escribenos a ${CONTACTO}.`;
 }

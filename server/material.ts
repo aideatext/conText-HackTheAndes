@@ -8,6 +8,8 @@ import { MATERIAL_SYSTEM } from './prompts.js';
 import { materialSchema, normalizeDelta, parseJsonLoose } from './graph.js';
 import { invitaAEscribir, MAX_CARACTERES_TEXTO, MAX_PAGINAS_PDF } from '../shared/limites.js';
 import type { Graph, GraphDelta } from '../shared/types.js';
+import type { Idioma } from '../shared/idioma.js';
+import { MENSAJES } from './mensajes.js';
 
 export const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -36,8 +38,6 @@ export class UnsupportedMaterial extends Error {
   }
 }
 
-const miles = (n: number) => n.toLocaleString('es-PE');
-
 /** Para medir con que material viene la gente, sin guardar el archivo ni su nombre. */
 export function tipoDeMaterial(mimetype: string): 'foto' | 'pdf' | 'texto' | 'otro' {
   const mime = (mimetype || '').split(';')[0].trim().toLowerCase();
@@ -52,7 +52,7 @@ export function tipoDeMaterial(mimetype: string): 'foto' | 'pdf' | 'texto' | 'ot
  * cuenta en paginas. Si el archivo no se deja leer aqui no se bloquea: ya pasa
  * por el tope de 10 MB, y quien decide si lo entiende es el modelo.
  */
-async function verificarPaginas(buffer: Buffer): Promise<void> {
+async function verificarPaginas(buffer: Buffer, idioma: Idioma): Promise<void> {
   let paginas: number;
   try {
     const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
@@ -63,20 +63,22 @@ async function verificarPaginas(buffer: Buffer): Promise<void> {
 
   if (paginas > MAX_PAGINAS_PDF) {
     throw new UnsupportedMaterial(
-      invitaAEscribir(
-        `Ese PDF tiene ${paginas} paginas y por ahora leemos hasta ${MAX_PAGINAS_PDF}.`,
-      ),
+      invitaAEscribir(MENSAJES[idioma].pdfLargo(paginas), idioma),
       'paginas',
     );
   }
 }
 
 /** Convierte el archivo subido en bloques de contenido para Claude. */
-export async function toContentBlocks(file: {
-  mimetype: string;
-  buffer: Buffer;
-  originalname: string;
-}): Promise<ContentBlock[]> {
+export async function toContentBlocks(
+  file: {
+    mimetype: string;
+    buffer: Buffer;
+    originalname: string;
+  },
+  idioma: Idioma = 'es',
+): Promise<ContentBlock[]> {
+  const m = MENSAJES[idioma];
   const mime = (file.mimetype || '').split(';')[0].trim().toLowerCase();
   const name = file.originalname.toLowerCase();
 
@@ -94,7 +96,7 @@ export async function toContentBlocks(file: {
   }
 
   if (mime === 'application/pdf') {
-    await verificarPaginas(file.buffer);
+    await verificarPaginas(file.buffer, idioma);
     return [
       {
         type: 'document',
@@ -105,16 +107,12 @@ export async function toContentBlocks(file: {
 
   if (TEXT_TYPES.includes(mime) || name.endsWith('.txt') || name.endsWith('.md')) {
     const text = file.buffer.toString('utf-8').trim();
-    if (!text) throw new UnsupportedMaterial('Ese archivo de texto esta vacio.');
+    if (!text) throw new UnsupportedMaterial(m.textoVacio);
     // Antes se recortaba en silencio a 60.000 caracteres: el estudiante creia
     // que conText habia leido todo. Mejor decir que no cabe que fingir que si.
     if (text.length > MAX_CARACTERES_TEXTO) {
       throw new UnsupportedMaterial(
-        invitaAEscribir(
-          `Ese texto tiene ${miles(text.length)} caracteres y por ahora leemos hasta ${miles(
-            MAX_CARACTERES_TEXTO,
-          )}, que son unas ${MAX_PAGINAS_PDF} paginas.`,
-        ),
+        invitaAEscribir(m.textoLargo(text.length), idioma),
         'caracteres',
       );
     }
@@ -122,18 +120,12 @@ export async function toContentBlocks(file: {
   }
 
   if (mime.startsWith('video/')) {
-    throw new UnsupportedMaterial(
-      'Por ahora conText no lee videos. Sube una foto, un PDF o un texto.',
-    );
+    throw new UnsupportedMaterial(m.sinVideo);
   }
   if (mime.startsWith('audio/')) {
-    throw new UnsupportedMaterial(
-      'Por ahora conText no lee archivos de audio. Puedes dictar con el microfono o subir una foto, un PDF o un texto.',
-    );
+    throw new UnsupportedMaterial(m.sinAudio);
   }
-  throw new UnsupportedMaterial(
-    'Ese tipo de archivo no lo puedo leer. Sube una foto (JPG, PNG o WEBP), un PDF o un .txt.',
-  );
+  throw new UnsupportedMaterial(m.tipoDesconocido);
 }
 
 export interface MaterialReading {
@@ -145,12 +137,16 @@ export async function readMaterial(
   blocks: ContentBlock[],
   graph: Graph,
   turn: number,
+  idioma: Idioma = 'es',
 ): Promise<MaterialReading> {
+  // El idioma va aqui y no en el system: asi el system sigue igual para todos y se cachea.
   const content = [
     ...blocks,
     {
       type: 'text' as const,
-      text: 'Analiza este material y devuelve el JSON con summary, nodes y links.',
+      text:
+        'Analiza este material y devuelve el JSON con summary, nodes y links. ' +
+        `Escribe el summary y las etiquetas en ${idioma === 'en' ? 'ingles' : 'espanol'}.`,
     },
   ];
 

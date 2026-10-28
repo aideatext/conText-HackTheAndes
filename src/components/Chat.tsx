@@ -12,6 +12,7 @@ import type { ChatMessage } from '../../shared/types';
 import { MAX_TURNOS } from '../../shared/limites';
 import { dictationSupported, ttsSupported, useDictation, useReadAloud } from '../speech';
 import MaterialPreview from './MaterialPreview';
+import { useT } from '../i18n';
 
 export default function Chat({
   messages,
@@ -36,6 +37,7 @@ export default function Chat({
   /** Solo en movil: el material queda fijo sobre la conversacion. */
   material?: { url: string; mime: string | null; nombre: string | null } | null;
 }) {
+  const t = useT().chat;
   const restantes = Math.max(0, MAX_TURNOS - turnos);
   const [materialAbierto, setMaterialAbierto] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -72,7 +74,7 @@ export default function Chat({
   return (
     <section className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="titular text-base text-tinta">Conversación</h2>
+        <h2 className="titular text-base text-tinta">{t.titulo}</h2>
         {puedeLeer && (
           <label className="flex cursor-pointer items-center gap-1.5 rounded-full bg-panel px-2.5 py-1 text-xs font-medium ring-1 ring-borde">
             <input
@@ -85,7 +87,7 @@ export default function Chat({
               className="accent-rojo"
             />
             <Volume2 className="h-3.5 w-3.5" />
-            El tutor habla
+            {t.tutorHabla}
           </label>
         )}
       </div>
@@ -99,7 +101,7 @@ export default function Chat({
           <div className="flex items-center gap-2 px-3 py-2">
             <ImageIcon className="h-3.5 w-3.5 shrink-0 text-tinta-suave/70" />
             <span className="flex-1 truncate text-xs text-tinta-suave">
-              {material.nombre ?? 'Tu material'}
+              {material.nombre ?? t.tuMaterial}
             </span>
             <ChevronDown
               className={`h-3.5 w-3.5 shrink-0 text-tinta-suave/70 transition-transform ${
@@ -123,8 +125,8 @@ export default function Chat({
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-medio bg-white p-4 ring-1 ring-borde">
         {messages.length === 0 && (
           <div className="space-y-2 text-sm text-tinta-suave/70">
-            <p>Cuéntame qué estás estudiando y empezamos.</p>
-            <p>Si subes una foto de tu cuaderno, conversamos sobre eso.</p>
+            <p>{t.vacio1}</p>
+            <p>{t.vacio2}</p>
           </div>
         )}
         {messages.map((m, i) => (
@@ -154,8 +156,8 @@ export default function Chat({
             {m.role === 'assistant' && puedeLeer && m.content && (
               <button
                 onClick={() => voz.speak(i, m.content)}
-                title={voz.speakingId === i ? 'Detener' : 'Leer en voz alta'}
-                aria-label={voz.speakingId === i ? 'Detener la lectura' : 'Leer en voz alta'}
+                title={voz.speakingId === i ? t.detener : t.leer}
+                aria-label={voz.speakingId === i ? t.detenerLectura : t.leer}
                 className={`shrink-0 rounded-full p-1.5 ring-1 ring-borde ${
                   voz.speakingId === i ? 'bg-rojo/10 text-rojo' : 'bg-white text-tinta-suave/70'
                 }`}
@@ -175,9 +177,7 @@ export default function Chat({
       {/* El tope se ve venir: avisar recien al chocar con el seria una trampa. */}
       {restantes <= 5 && (
         <p className="rounded-chico bg-panel px-3 py-2 text-[11px] leading-relaxed text-tinta-suave ring-1 ring-rojo/30">
-          {restantes > 0
-            ? `Te quedan ${restantes} ${restantes === 1 ? 'turno' : 'turnos'} en esta prueba. Puedes llevarte tu resumen en PDF cuando quieras.`
-            : 'Llegaste al final de esta prueba. Llévate tu resumen en PDF, y si quieres empezar de nuevo pulsa “Borrar todo”.'}
+          {restantes > 0 ? t.quedan(restantes) : t.final}
         </p>
       )}
 
@@ -190,7 +190,7 @@ export default function Chat({
       {dictado.listening && (
         <p className="flex items-center gap-2 text-xs text-tinta-suave">
           <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          Te escucho… {dictado.interim}
+          {t.escucho} {dictado.interim}
         </p>
       )}
 
@@ -213,7 +213,7 @@ export default function Chat({
             }
           }}
           rows={1}
-          placeholder={disabled ? 'Conectando…' : 'Escribe tu mensaje…'}
+          placeholder={disabled ? t.conectando : t.escribe}
           disabled={disabled || streaming}
           className="max-h-32 flex-1 resize-none rounded-medio border border-borde px-4 py-2.5 text-sm outline-none focus:border-azul"
         />
@@ -222,8 +222,8 @@ export default function Chat({
             type="button"
             onClick={dictado.toggle}
             disabled={disabled || streaming}
-            aria-label={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
-            title={dictado.listening ? 'Dejar de dictar' : 'Dictar con el micrófono'}
+            aria-label={dictado.listening ? t.dejarDictar : t.dictar}
+            title={dictado.listening ? t.dejarDictar : t.dictar}
             className={`rounded-medio p-2.5 ring-1 disabled:opacity-40 ${
               dictado.listening
                 ? 'bg-red-600 text-white ring-red-600'
@@ -236,7 +236,7 @@ export default function Chat({
         <button
           type="submit"
           disabled={disabled || streaming || !draft.trim()}
-          aria-label="Enviar"
+          aria-label={t.enviar}
           className="rounded-medio bg-tinta p-2.5 text-white disabled:opacity-40"
         >
           {streaming ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}

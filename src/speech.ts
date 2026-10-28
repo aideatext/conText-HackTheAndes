@@ -3,6 +3,8 @@
  * (speechSynthesis). No se sube ningun archivo de audio al servidor.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { LOCALE, type Idioma } from '../shared/idioma';
+import { idiomaActual, textos } from './i18n';
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -24,7 +26,7 @@ function getRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
 
 export const dictationSupported = () => getRecognitionCtor() !== null;
 
-/** Dictado en es-PE. Devuelve el texto final y el parcial mientras hablas. */
+/** Dictado en el idioma de la interfaz. Devuelve el texto final y el parcial mientras hablas. */
 export function useDictation(onText: (text: string) => void) {
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState('');
@@ -45,7 +47,7 @@ export function useDictation(onText: (text: string) => void) {
     setError(null);
     const rec = new Ctor();
     ref.current = rec;
-    rec.lang = 'es-PE';
+    rec.lang = LOCALE[idiomaActual()];
     rec.continuous = true;
     rec.interimResults = true;
 
@@ -59,11 +61,7 @@ export function useDictation(onText: (text: string) => void) {
       setInterim(parcial);
     };
     rec.onerror = (e: any) => {
-      setError(
-        e?.error === 'not-allowed'
-          ? 'No me diste permiso para usar el micrófono.'
-          : 'No pude escucharte. Prueba otra vez o escribe tu mensaje.',
-      );
+      setError(e?.error === 'not-allowed' ? textos().voz.sinPermiso : textos().voz.noEscuche);
       setListening(false);
     };
     rec.onend = () => {
@@ -86,14 +84,35 @@ export function useDictation(onText: (text: string) => void) {
 
 export const ttsSupported = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
+/**
+ * En que idioma esta un texto, contando palabras frecuentes. El tutor contesta en
+ * el idioma del estudiante, que no siempre es el de la interfaz: la respuesta
+ * manda. Si no hay senal clara, se queda el de la interfaz.
+ */
+const FRECUENTES: Record<Idioma, Set<string>> = {
+  en: new Set('the and you what is are of to do how why it this that your with for can'.split(' ')),
+  es: new Set('el la que de y los las es por qué cómo tu un una con para puedes se'.split(' ')),
+};
+export function idiomaDelTexto(texto: string): Idioma {
+  const palabras = texto.toLowerCase().match(/\p{L}+/gu) ?? [];
+  let en = 0;
+  let es = 0;
+  for (const p of palabras) {
+    if (FRECUENTES.en.has(p)) en++;
+    if (FRECUENTES.es.has(p)) es++;
+  }
+  return en > es ? 'en' : es > en ? 'es' : idiomaActual();
+}
+
 /** Voz del sistema: el respaldo si Azure Speech no responde. */
 function hablarConElNavegador(text: string, onEnd: () => void): boolean {
   if (!ttsSupported()) return false;
   window.speechSynthesis.cancel();
+  const idioma = idiomaDelTexto(text);
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'es-PE';
-  const es = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith('es'));
-  if (es) u.voice = es;
+  u.lang = LOCALE[idioma];
+  const voz = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith(idioma));
+  if (voz) u.voice = voz;
   u.onend = onEnd;
   u.onerror = onEnd;
   window.speechSynthesis.speak(u);
@@ -128,7 +147,7 @@ export function useReadAloud() {
 
       setSpeakingId(id);
 
-      if (!azureCaido.current) {
+      if (!azureCaido.current && idiomaDelTexto(text) === 'es') {
         try {
           const res = await fetch('/api/voz', {
             method: 'POST',
