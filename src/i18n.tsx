@@ -91,6 +91,9 @@ const es = {
     conexionCortada: 'Se cortó la conexión. Intenta de nuevo.',
     noLeiArchivo: 'No pude leer ese archivo.',
     noPdf: 'No pude armar el PDF. Intenta de nuevo.',
+    noEnvie: 'No pude enviar tu mensaje. Intenta de nuevo.',
+    despertando:
+      'conText se estaba despertando y no alcanzó a responder. Intenta de nuevo en unos segundos.',
   },
   material: {
     titulo: 'Tu material',
@@ -242,6 +245,8 @@ const en: Textos = {
     conexionCortada: 'The connection dropped. Try again.',
     noLeiArchivo: "I couldn't read that file.",
     noPdf: "I couldn't build the PDF. Try again.",
+    noEnvie: "I couldn't send your message. Try again.",
+    despertando: "conText was waking up and didn't answer in time. Try again in a few seconds.",
   },
   material: {
     titulo: 'Your material',

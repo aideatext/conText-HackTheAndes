@@ -153,7 +153,12 @@ export default function MaterialPanel({
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,text/markdown,.md"
               className="hidden"
-              onChange={(e) => handle(e.target.files?.[0])}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                // Se vacia para que volver a elegir el mismo archivo (tras un error) cuente.
+                e.target.value = '';
+                handle(f);
+              }}
             />
             <input
               ref={cameraRef}
@@ -161,7 +166,12 @@ export default function MaterialPanel({
               accept="image/*"
               capture="environment"
               className="hidden"
-              onChange={(e) => handle(e.target.files?.[0])}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                // Se vacia para que volver a elegir el mismo archivo (tras un error) cuente.
+                e.target.value = '';
+                handle(f);
+              }}
             />
           </div>
         </Plegable>

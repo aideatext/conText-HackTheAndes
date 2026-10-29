@@ -88,6 +88,17 @@ encuentra arrancando: tarda medio minuto o recibe un **error 520** de Cloudflare
 [`.github/workflows/despertador.yml`](../.github/workflows/despertador.yml) visita `/healthz` cada 5
 minutos. `/healthz` no cuenta como uso, así que el contador público no se infla.
 
+> **No es confiable.** En sus primeras 8 horas GitHub lo corrió **una vez** por horario, no cerca de
+> cien: las tareas programadas frecuentes se retrasan o se saltan. El 29 oct 2026 conText se volvió a
+> dormir y una subida de foto recibió un 502 del proxy de Render. Lo que sí cumple es un monitor
+> externo como **UptimeRobot** (gratis, cada 5 minutos, avisa por correo si cae), o el plan de pago,
+> que no duerme. El de GitHub queda como respaldo.
+
+Desde ese día la app además **se defiende sola** del arranque en frío: ante un 502, 503 o 504 del
+proxy, la subida de material y el envío de un mensaje esperan y reintentan tres veces (4, 8 y 12 s)
+antes de rendirse con un mensaje claro. Y las fotos se achican en el navegador a 1.600 px antes de
+subir ([`src/imagen.ts`](../src/imagen.ts)): una foto de celular de 7 MB llega con unos 200 KB.
+
 - **Horas:** encendido todo el mes son 744 de las 750 horas gratis **del workspace**. Alcanza sólo
   si conText es el único servicio gratuito; con otro, a fin de mes se suspenderían los dos.
 - **Alarma:** si conText no responde tras tres intentos, la tarea falla y GitHub avisa por correo.

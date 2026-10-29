@@ -1,6 +1,7 @@
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
 import { CABECERA_IDIOMA } from '../shared/idioma';
-import { idiomaActual } from './i18n';
+import { idiomaActual, textos } from './i18n';
+import { reducirFoto } from './imagen';
 
 const SESSION_KEY = 'context.sessionId';
 
@@ -9,10 +10,34 @@ function conIdioma(extra: Record<string, string> = {}): Record<string, string> {
   return { ...extra, [CABECERA_IDIOMA]: idiomaActual() };
 }
 
+/**
+ * 502/503/504 no los escribe conText: los pone el proxy de Render mientras el
+ * servidor del plan gratis despierta o se reinicia. Ahi conviene esperar y reintentar.
+ */
+const DESPERTANDO = [502, 503, 504];
+const ESPERAS_MS = [4_000, 8_000, 12_000];
+
+async function conReintento(hacer: () => Promise<Response>): Promise<Response> {
+  for (let intento = 0; ; intento++) {
+    let res: Response | null = null;
+    try {
+      res = await hacer();
+    } catch (err) {
+      // Sin respuesta (conexion cortada durante el reinicio): mismo trato.
+      if (intento >= ESPERAS_MS.length) throw err;
+    }
+    if (res && (!DESPERTANDO.includes(res.status) || intento >= ESPERAS_MS.length)) return res;
+    await new Promise((ok) => setTimeout(ok, ESPERAS_MS[intento]));
+  }
+}
+
 async function jsonOrThrow(res: Response) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error ?? `Error ${res.status}`);
+    const porDefecto = DESPERTANDO.includes(res.status)
+      ? textos().errores.despertando
+      : `Error ${res.status}`;
+    throw new Error(body.error ?? porDefecto);
   }
   return res.json();
 }
@@ -118,10 +143,13 @@ export interface MaterialResult {
 
 /** Sube foto, PDF o texto. El servidor valida tipo y tamano. */
 export async function uploadMaterial(sessionId: string, file: File): Promise<MaterialResult> {
-  const form = new FormData();
-  form.append('sessionId', sessionId);
-  form.append('file', file);
-  const res = await fetch('/api/material', { method: 'POST', body: form, headers: conIdioma() });
+  const archivo = await reducirFoto(file);
+  const res = await conReintento(() => {
+    const form = new FormData();
+    form.append('sessionId', sessionId);
+    form.append('file', archivo);
+    return fetch('/api/material', { method: 'POST', body: form, headers: conIdioma() });
+  });
   return (await jsonOrThrow(res)) as MaterialResult;
 }
 
@@ -135,15 +163,18 @@ export interface TurnHandlers {
 
 /** POST /api/turn leyendo la respuesta SSE del servidor. */
 export async function sendTurn(sessionId: string, text: string, h: TurnHandlers): Promise<void> {
-  const res = await fetch('/api/turn', {
-    method: 'POST',
-    headers: conIdioma({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ sessionId, text }),
-  });
+  const res = await conReintento(() =>
+    fetch('/api/turn', {
+      method: 'POST',
+      headers: conIdioma({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ sessionId, text }),
+    }),
+  );
 
   if (!res.ok || !res.body) {
     const body = await res.json().catch(() => ({}));
-    h.onError?.(body.error ?? 'No pude enviar tu mensaje. Intenta de nuevo.');
+    const e = textos().errores;
+    h.onError?.(body.error ?? (DESPERTANDO.includes(res.status) ? e.despertando : e.noEnvie));
     h.onDone?.('');
     return;
   }
