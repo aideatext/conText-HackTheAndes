@@ -80,6 +80,22 @@ Verificado al mover: `/healthz` con `auth: "entorno"` y un turno transmitido en 
 El TXT `asuid.context` de Cloudflare era la verificación de Azure: sobra mientras no se vuelva.
 Para volver a Azure (§5), el CNAME `context` regresa al Container App y ese TXT se recrea.
 
+## El despertador
+
+El plan Free duerme el servicio tras unos 15 minutos sin visitas, y la primera visita después lo
+encuentra arrancando: tarda medio minuto o recibe un **error 520** de Cloudflare. Pasó el 29 oct 2026.
+
+[`.github/workflows/despertador.yml`](../.github/workflows/despertador.yml) visita `/healthz` cada 5
+minutos. `/healthz` no cuenta como uso, así que el contador público no se infla.
+
+- **Horas:** encendido todo el mes son 744 de las 750 horas gratis **del workspace**. Alcanza sólo
+  si conText es el único servicio gratuito; con otro, a fin de mes se suspenderían los dos.
+- **Alarma:** si conText no responde tras tres intentos, la tarea falla y GitHub avisa por correo.
+- **Si deja de correr:** GitHub desactiva las tareas programadas de un repo público tras 60 días
+  sin actividad. Se reactiva en la pestaña *Actions* del repo.
+- **Para apagarlo** (por ejemplo, al pasar a un plan de pago, que no duerme): *Actions →
+  Despertador → Disable workflow*, o borrar el archivo.
+
 ---
 
 ## 5. Volver a Azure

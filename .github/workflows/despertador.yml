@@ -1,0 +1,40 @@
+# Mantiene despierto a conText en el plan Free de Render, que duerme el servicio
+# tras ~15 minutos sin visitas: al despertar, la primera visita tarda medio minuto
+# o se encuentra un error 520 de Cloudflare.
+#
+# Cada 5 minutos, y no cada 10: GitHub retrasa a veces las tareas programadas, y
+# con 10 un retraso podria dejar pasar los 15 minutos. El repo es publico, asi
+# que no gasta minutos de Actions; en Render, un servicio encendido todo el mes
+# son 744 de sus 750 horas gratis (docs/despliegue-render.md).
+#
+# Tambien es una alarma: si conText no responde tras tres intentos, la tarea
+# falla y GitHub avisa por correo.
+#
+# Ojo: GitHub desactiva las tareas programadas de un repo publico tras 60 dias
+# sin actividad. Si eso pasa, se reactiva en la pestana Actions.
+name: Despertador
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  despertar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Visitar /healthz
+        run: |
+          for intento in 1 2 3; do
+            if curl -fsS -m 60 https://context.aideatext.ai/healthz; then
+              echo
+              exit 0
+            fi
+            echo "Intento $intento sin respuesta; reintento en 20 s"
+            sleep 20
+          done
+          echo "::error::conText no respondio tras 3 intentos"
+          exit 1
