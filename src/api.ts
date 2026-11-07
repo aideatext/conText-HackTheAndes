@@ -132,6 +132,26 @@ export async function getStats(): Promise<Stats> {
   return (await jsonOrThrow(await fetch('/api/stats'))) as Stats;
 }
 
+export interface Apoyo {
+  modo: 'off' | 'cafe' | 'beca';
+  qr: string | null;
+  pagina: string | null;
+  precio: number;
+}
+
+export async function getApoyo(): Promise<Apoyo> {
+  return (await jsonOrThrow(await fetch('/api/apoyo'))) as Apoyo;
+}
+
+/** Quien llega con el enlace de canje trae una sesion que le invito alguien. */
+export function esSesionInvitada(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get('ref') === 'sesion-pendiente';
+  } catch {
+    return false;
+  }
+}
+
 export interface MaterialResult {
   summary: string;
   materialName: string;

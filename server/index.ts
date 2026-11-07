@@ -20,6 +20,7 @@ import { idiomaTarjeta, paginasPorIdioma } from './meta.js';
 import { readFileSync } from 'node:fs';
 import { anota, guardiaUso, limpiaRef, resumenDeUso, totalesPublicos } from './uso.js';
 import { loadMaterial, saveMaterial } from './blob.js';
+import { rutasApoyo } from './apoyo.js';
 import { synthesize, voiceEnabled, VoiceUnavailable } from './voice.js';
 import { contrato, entradaSchema, extraerGrafo, guardia, qatomEnabled } from './qatom.js';
 import {
@@ -163,6 +164,8 @@ async function start() {
       res.status(502).json({ error: 'No se pudo analizar el texto. Intenta de nuevo.' });
     }
   });
+
+  rutasApoyo(app);
 
   app.post('/api/session', (req, res) => {
     // El ?ref del enlace de invitacion: dice de que campana vino alguien, no quien es.

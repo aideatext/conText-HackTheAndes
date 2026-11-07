@@ -16,6 +16,7 @@ import { exportarPdf } from './export';
 import Chat from './components/Chat';
 import { AvisoNvidia, Marca } from './components/Marca';
 import MiSesion from './components/MiSesion';
+import Apoyo from './components/Apoyo';
 import GraphPanel from './components/GraphPanel';
 import MaterialPanel from './components/MaterialPanel';
 import SelectorIdioma from './components/SelectorIdioma';
@@ -342,6 +343,7 @@ export default function App() {
               {tx.pie.contador(stats.sesionesConTurnos, stats.turnos, stats.nodos)}
             </span>
           )}
+          <Apoyo />
           {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
           <span className="text-tinta-suave/80">
             · {tx.pie.consulta}{' '}

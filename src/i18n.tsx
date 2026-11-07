@@ -213,6 +213,27 @@ const es = {
       `conText · no te califica y no redacta por ti · ${pagina}/${total}`,
     archivo: 'mi-resumen-context.pdf',
   },
+  apoyo: {
+    cafe: {
+      boton: 'Invítame un café',
+      titulo: '☕ Invítame un café',
+      texto: (precio: number) =>
+        `conText es gratis para estudiantes. Si te sirvió, apóyalo con lo que quieras desde la app de tu banco con CoDi, sin comisiones. Cada $${precio} MXN pagan una sesión más.`,
+      masOpciones: 'Más formas de apoyar',
+    },
+    beca: {
+      boton: 'Regala sesiones',
+      titulo: '🎓 Regala sesiones a estudiantes',
+      texto: (precio: number) =>
+        `Como el café pendiente: cada $${precio} MXN financian una sesión de conText para un estudiante que está aprendiendo. Tú ves el impacto, nunca su identidad.`,
+      masOpciones: 'Ver sesiones financiadas',
+    },
+    pasos: 'Abre tu app bancaria → CoDi → escanea → elige el monto',
+    altQr: 'Código QR CoDi para apoyar a conText',
+    privacidad: 'El pago va directo de tu banco a AIdeaText. conText no ve tus datos bancarios.',
+    cerrar: 'Cerrar',
+    invitada: 'Esta sesión te la regaló alguien.',
+  },
   archivoSesion: 'mi-sesion-context.json',
   contacto: CONTACTO,
 };
@@ -362,6 +383,27 @@ const en: Textos = {
     pie: (pagina: number, total: number) =>
       `conText · doesn't grade you and doesn't write for you · ${pagina}/${total}`,
     archivo: 'my-context-summary.pdf',
+  },
+  apoyo: {
+    cafe: {
+      boton: 'Buy me a coffee',
+      titulo: '☕ Buy me a coffee',
+      texto: (precio: number) =>
+        `conText is free for students. If it helped you, support it with any amount from your bank app via CoDi (Mexico), no fees. Every $${precio} MXN pays for one more session.`,
+      masOpciones: 'More ways to help',
+    },
+    beca: {
+      boton: 'Gift sessions',
+      titulo: '🎓 Gift sessions to students',
+      texto: (precio: number) =>
+        `Like a suspended coffee: every $${precio} MXN funds one conText session for a student who is learning. You see the impact, never who they are.`,
+      masOpciones: 'See funded sessions',
+    },
+    pasos: 'Open your bank app → CoDi → scan → choose the amount',
+    altQr: 'CoDi QR code to support conText',
+    privacidad: 'The payment goes straight from your bank to AIdeaText. conText never sees your bank details.',
+    cerrar: 'Close',
+    invitada: 'Someone gifted you this session.',
   },
   archivoSesion: 'my-context-session.json',
   contacto: CONTACTO,
