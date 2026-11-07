@@ -4,6 +4,7 @@ import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '.
 import {
   borrarSesion,
   createSession,
+  esSesionInvitada,
   getStats,
   resumeOrCreateSession,
   retomarSesion,
@@ -302,6 +303,7 @@ export default function App() {
             <span className="hidden sm:inline">{tx.cabecera.resumen}</span>
             <span className="sr-only sm:hidden">{tx.cabecera.resumen}</span>
           </button>
+          <Apoyo />
         </div>
       </header>
 
@@ -343,7 +345,7 @@ export default function App() {
               {tx.pie.contador(stats.sesionesConTurnos, stats.turnos, stats.nodos)}
             </span>
           )}
-          <Apoyo />
+          {esSesionInvitada() && <span className="text-tinta-suave/80">· {tx.apoyo.invitada}</span>}
           {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
           <span className="text-tinta-suave/80">
             · {tx.pie.consulta}{' '}

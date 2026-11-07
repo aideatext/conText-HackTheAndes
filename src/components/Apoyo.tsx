@@ -1,5 +1,5 @@
 /**
- * El boton de apoyo del pie y su ventana con el QR CoDi.
+ * El boton de apoyo de la cabecera (a la derecha de "Llevarme mi resumen") y su ventana con el QR CoDi.
  *
  * Dos modos con el mismo mecanismo (un QR de monto libre):
  *   - cafe: "Invítame un café", apoyo general a AIdeaText.
@@ -8,14 +8,13 @@
  */
 import { useEffect, useState } from 'react';
 import { Coffee, GraduationCap, X } from 'lucide-react';
-import { esSesionInvitada, getApoyo, type Apoyo as DatosApoyo } from '../api';
+import { getApoyo, type Apoyo as DatosApoyo } from '../api';
 import { useT } from '../i18n';
 
 export default function Apoyo() {
   const t = useT().apoyo;
   const [datos, setDatos] = useState<DatosApoyo | null>(null);
   const [abierto, setAbierto] = useState(false);
-  const invitada = esSesionInvitada();
 
   useEffect(() => {
     getApoyo().then(setDatos).catch(() => {});
@@ -28,22 +27,21 @@ export default function Apoyo() {
     return () => window.removeEventListener('keydown', cerrar);
   }, [abierto]);
 
-  if (!datos || datos.modo === 'off' || !datos.qr) {
-    return invitada ? <span className="text-tinta-suave/80">· {t.invitada}</span> : null;
-  }
+  if (!datos || datos.modo === 'off' || !datos.qr) return null;
 
   const txt = t[datos.modo];
   const Icono = datos.modo === 'beca' ? GraduationCap : Coffee;
 
   return (
     <>
-      {invitada && <span className="text-tinta-suave/80">· {t.invitada}</span>}
       <button
         onClick={() => setAbierto(true)}
-        className="inline-flex items-center gap-1 rounded-full bg-azul/10 px-2.5 py-0.5 font-semibold text-azul hover:bg-azul/20"
+        className="flex shrink-0 items-center gap-1.5 rounded-medio bg-rojo px-3 py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
       >
-        <Icono className="h-3.5 w-3.5" />
-        {txt.boton}
+        <Icono className="h-4 w-4" />
+        {/* En un telefono el rotulo no cabe: queda el icono, como en "Llevarme mi resumen". */}
+        <span className="hidden sm:inline">{txt.boton}</span>
+        <span className="sr-only sm:hidden">{txt.boton}</span>
       </button>
 
       {abierto && (
