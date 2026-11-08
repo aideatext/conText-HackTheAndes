@@ -270,3 +270,16 @@ interés más fuerte que hay.
 
 > Los eventos de uso son perpetuos a propósito: **no se prueba contra producción.** Una sola pasada
 > inflaría para siempre el contador que existe para mostrar gente real.
+
+---
+
+## 2026-11-08 · «Invítame un café» pasa a «Donación»
+
+Hackathon DevDay Exchange Community CDMX. El detalle está en
+https://github.com/aideatext/AIdeaText-CODI-MIPEY (`docs/BITACORA.md`).
+
+- `ba118f8`: el botón de apoyo dice **«Donación»** (ícono `HandHeart`), título «💛 Haz una donación». Leyenda: estudiantes de distintos estados de México usan conText y las demás herramientas de AIdeaText gracias a tu donación; se reparte por igual entre los estudiantes registrados. ES y EN.
+- El QR que sirve `/api/apoyo/qr.png` es el QR CoDi permanente `35552d2a9e`, el mismo que cuenta `codi.aideatext.ai` (verificado byte a byte).
+- Lo donado **no** compra sesiones de conText: subvenciona el uso de AIdeaText (v61), que ya integra conText. El reparto público está en https://codi.aideatext.ai/becas.
+- `USO_TOKEN` quedó configurado en Render (abre `/api/uso`).
+- Pendiente en Render: `APOYO_PAGINA_URL=https://codi.aideatext.ai/becas` para mostrar «Ver cómo se reparte» en la ventana de donación.
