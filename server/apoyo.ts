@@ -1,5 +1,5 @@
 /**
- * Apoyo con CoDi: "Invítame un café" hoy, beca de sesiones para estudiantes despues.
+ * Donación con CoDi (modo `cafe`): se reparte por igual entre los estudiantes registrados de AIdeaText.
  *
  * conText no cobra ni procesa pagos: solo muestra el QR CoDi permanente (monto
  * libre) que genera el servicio de pagos de AIdeaText con pey. El dinero va

@@ -215,11 +215,11 @@ const es = {
   },
   apoyo: {
     cafe: {
-      boton: 'Invítame un café',
-      titulo: '☕ Invítame un café',
-      texto: (precio: number) =>
-        `conText es gratis para estudiantes. Si te sirvió, apóyalo con lo que quieras desde la app de tu banco con CoDi, sin comisiones. Cada $${precio} MXN pagan una sesión más.`,
-      masOpciones: 'Más formas de apoyar',
+      boton: 'Donación',
+      titulo: '💛 Haz una donación',
+      texto: (_precio: number) =>
+        `Estudiantes de distintos estados de México usan conText y las demás herramientas de AIdeaText gracias a tu donación. Dona lo que quieras desde la app de tu banco con CoDi, sin comisiones: se reparte por igual entre todos los estudiantes registrados.`,
+      masOpciones: 'Ver cómo se reparte',
     },
     beca: {
       boton: 'Regala sesiones',
@@ -229,7 +229,7 @@ const es = {
       masOpciones: 'Ver sesiones financiadas',
     },
     pasos: 'Abre tu app bancaria → CoDi → escanea → elige el monto',
-    altQr: 'Código QR CoDi para apoyar a conText',
+    altQr: 'Código QR CoDi para donar a AIdeaText',
     privacidad: 'El pago va directo de tu banco a AIdeaText. conText no ve tus datos bancarios.',
     cerrar: 'Cerrar',
     invitada: 'Esta sesión te la regaló alguien.',
@@ -386,11 +386,11 @@ const en: Textos = {
   },
   apoyo: {
     cafe: {
-      boton: 'Buy me a coffee',
-      titulo: '☕ Buy me a coffee',
-      texto: (precio: number) =>
-        `conText is free for students. If it helped you, support it with any amount from your bank app via CoDi (Mexico), no fees. Every $${precio} MXN pays for one more session.`,
-      masOpciones: 'More ways to help',
+      boton: 'Donate',
+      titulo: '💛 Make a donation',
+      texto: (_precio: number) =>
+        `Students across different states of Mexico use conText and the other AIdeaText tools thanks to your donation. Give any amount from your bank app via CoDi (Mexico), no fees: it is shared equally among all registered students.`,
+      masOpciones: 'See how it is shared',
     },
     beca: {
       boton: 'Gift sessions',
@@ -400,7 +400,7 @@ const en: Textos = {
       masOpciones: 'See funded sessions',
     },
     pasos: 'Open your bank app → CoDi → scan → choose the amount',
-    altQr: 'CoDi QR code to support conText',
+    altQr: 'CoDi QR code to donate to AIdeaText',
     privacidad: 'The payment goes straight from your bank to AIdeaText. conText never sees your bank details.',
     cerrar: 'Close',
     invitada: 'Someone gifted you this session.',

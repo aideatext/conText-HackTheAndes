@@ -2,12 +2,12 @@
  * El boton de apoyo de la cabecera (a la derecha de "Llevarme mi resumen") y su ventana con el QR CoDi.
  *
  * Dos modos con el mismo mecanismo (un QR de monto libre):
- *   - cafe: "Invítame un café", apoyo general a AIdeaText.
+ *   - cafe: "Donación": lo donado se reparte por igual entre los estudiantes registrados de AIdeaText.
  *   - beca: "Regala sesiones": lo donado financia sesiones para estudiantes que aprenden.
  * Si el servidor dice `off`, no se pinta nada.
  */
 import { useEffect, useState } from 'react';
-import { Coffee, GraduationCap, X } from 'lucide-react';
+import { GraduationCap, HandHeart, X } from 'lucide-react';
 import { getApoyo, type Apoyo as DatosApoyo } from '../api';
 import { useT } from '../i18n';
 
@@ -30,7 +30,7 @@ export default function Apoyo() {
   if (!datos || datos.modo === 'off' || !datos.qr) return null;
 
   const txt = t[datos.modo];
-  const Icono = datos.modo === 'beca' ? GraduationCap : Coffee;
+  const Icono = datos.modo === 'beca' ? GraduationCap : HandHeart;
 
   return (
     <>
