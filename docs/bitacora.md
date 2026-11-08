@@ -282,4 +282,4 @@ https://github.com/aideatext/AIdeaText-CODI-MIPEY (`docs/BITACORA.md`).
 - El QR que sirve `/api/apoyo/qr.png` es el QR CoDi permanente `35552d2a9e`, el mismo que cuenta `codi.aideatext.ai` (verificado byte a byte).
 - Lo donado **no** compra sesiones de conText: subvenciona el uso de AIdeaText (v61), que ya integra conText. El reparto público está en https://codi.aideatext.ai/becas.
 - `USO_TOKEN` quedó configurado en Render (abre `/api/uso`).
-- Pendiente en Render: `APOYO_PAGINA_URL=https://codi.aideatext.ai/becas` para mostrar «Ver cómo se reparte» en la ventana de donación.
+- Render: `APOYO_PAGINA_URL=https://codi.aideatext.ai/becas` configurado (verificado en `/api/apoyo` a las 20:45 UTC); la ventana muestra «Ver cómo se reparte».
