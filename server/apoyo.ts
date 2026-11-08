@@ -28,7 +28,13 @@ function qrPng(): Buffer | null {
   if (!b64) return null;
   try {
     const buf = Buffer.from(b64, 'base64');
-    return buf.length > 0 ? buf : null;
+    // Firma PNG: evita servir basura si la variable se pego mal (p. ej. el comando en vez de su salida).
+    const firma = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    if (buf.length < 100 || !buf.subarray(0, 8).equals(firma)) {
+      console.warn('[apoyo] APOYO_QR_PNG no es un PNG en base64 valido; boton desactivado');
+      return null;
+    }
+    return buf;
   } catch {
     return null;
   }
@@ -45,7 +51,7 @@ export function rutasApoyo(app: Express) {
       modo: m,
       qr: m === 'off' ? null : '/api/apoyo/qr.png',
       // Solo enlaces https: lo que viene de una variable igual se valida.
-      pagina: pagina && /^https:\/\//.test(pagina) ? pagina : null,
+      pagina: pagina && /^https:\/\/[^\s<>]+$/.test(pagina) ? pagina : null,
       precio: Number(process.env.APOYO_PRECIO ?? 10) || 10,
     });
   });
