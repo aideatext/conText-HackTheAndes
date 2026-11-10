@@ -3,7 +3,7 @@ import { Download, Image as ImageIcon } from 'lucide-react';
 import type { Graph, Metrics, Origin } from '../../shared/types';
 import GraphVisualization, { ORIGIN_COLOR } from './GraphVisualization';
 import { useT } from '../i18n';
-import { svgAPng } from '../export';
+import { svgAPng } from '../svgPng';
 import MetricsPanel from './MetricsPanel';
 
 function download(blob: Blob, filename: string) {

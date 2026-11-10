@@ -13,7 +13,6 @@ import {
   type SesionExportada,
   type Stats,
 } from './api';
-import { exportarPdf } from './export';
 import Chat from './components/Chat';
 import { AvisoNvidia, Marca } from './components/Marca';
 import MiSesion from './components/MiSesion';
@@ -263,6 +262,8 @@ export default function App() {
   async function descargarResumen() {
     setExportando(true);
     try {
+      // pdf-lib se descarga solo al pedir el resumen.
+      const { exportarPdf } = await import('./export');
       await exportarPdf({
         graph,
         metrics,
