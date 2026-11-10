@@ -1,0 +1,19 @@
+# conText · AIdeaText
+
+> conText es una aplicación web educativa y gratuita de AIdeaText. El estudiante sube su material (PDF o texto), conversa con un tutor socrático con IA que no hace la tarea por él y ve en vivo un grafo con las ideas que va conectando. Interfaz en español y en inglés.
+
+## Qué hace
+- Tutor socrático: responde con preguntas que guían el razonamiento, no con respuestas hechas.
+- Grafo de ideas en vivo: cada turno de la conversación agrega conceptos y relaciones al mapa.
+- Material propio: el estudiante sube su PDF o texto y la conversación se ancla en él.
+- Voz: se puede pensar en voz alta.
+- Gratis para estudiantes, sostenido por donaciones.
+
+## Enlaces
+- [conText (español)](https://context.aideatext.ai/)
+- [conText (English)](https://context.aideatext.ai/?lang=en)
+- [AIdeaText](https://aideatext.ai)
+- [Código fuente](https://github.com/aideatext/conText-HackTheAndes)
+
+## Contacto
+first.contact@aideatext.ai

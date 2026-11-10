@@ -18,6 +18,7 @@ interface Meta {
   html: string;
   locale: string;
   titulo: string;
+  h1: string;
   descripcion: string;
   descripcionCorta: string;
   alt: string;
@@ -28,6 +29,7 @@ const META: Record<IdiomaTarjeta, Meta> = {
     html: 'es-PE',
     locale: 'es_PE',
     titulo: 'conText · Piensa tus ideas en voz alta y míralas conectarse',
+    h1: 'conText: piensa tus ideas en voz alta y míralas conectarse',
     descripcion:
       'Sube tu material, conversa con un tutor socrático que no hace la tarea por ti y mira en vivo el grafo de las ideas que conectas. En español y en inglés.',
     descripcionCorta:
@@ -38,6 +40,7 @@ const META: Record<IdiomaTarjeta, Meta> = {
     html: 'en-US',
     locale: 'en_US',
     titulo: 'conText · Think your ideas out loud and watch them connect',
+    h1: 'conText: think your ideas out loud and watch them connect',
     descripcion:
       "Upload your material, talk with a Socratic tutor that won't do the homework for you, and watch the map of the ideas you connect grow live. In English and Spanish.",
     descripcionCorta:
@@ -48,6 +51,7 @@ const META: Record<IdiomaTarjeta, Meta> = {
     html: 'pt-BR',
     locale: 'pt_BR',
     titulo: 'conText · Pense suas ideias em voz alta e veja-as se conectarem',
+    h1: 'conText: pense suas ideias em voz alta e veja-as se conectarem',
     descripcion:
       'Envie seu material, converse com um tutor socrático que não faz a lição por você e veja ao vivo o mapa das ideias que você conecta. Disponível em espanhol e inglês.',
     descripcionCorta:
@@ -58,6 +62,7 @@ const META: Record<IdiomaTarjeta, Meta> = {
     html: 'fr-FR',
     locale: 'fr_FR',
     titulo: 'conText · Pense tes idées à voix haute et regarde-les se connecter',
+    h1: 'conText : pense tes idées à voix haute et regarde-les se connecter',
     descripcion:
       'Importe ton document, discute avec un tuteur socratique qui ne fait pas les devoirs à ta place et regarde en direct la carte des idées que tu relies. Disponible en espagnol et en anglais.',
     descripcionCorta:
@@ -83,6 +88,12 @@ function fijar(html: string, atributo: 'name' | 'property', clave: string, valor
   return html.replace(re, `$1${escapar(valor)}$2`);
 }
 
+/** Reemplaza un fragmento que tiene que existir en index.html. */
+function cambiar(html: string, re: RegExp, valor: string): string {
+  if (!re.test(html)) throw new Error(`index.html no tiene ${re}`);
+  return html.replace(re, () => valor);
+}
+
 /** Las cuatro versiones de index.html, armadas una vez al arrancar. */
 export function paginasPorIdioma(plantilla: string): Record<IdiomaTarjeta, string> {
   const salida = {} as Record<IdiomaTarjeta, string>;
@@ -90,6 +101,13 @@ export function paginasPorIdioma(plantilla: string): Record<IdiomaTarjeta, strin
     const m = META[i];
     const imagen = `${SITIO}/og-image-${i}.png`;
     let html = plantilla.replace(/<html lang="[^"]*">/, `<html lang="${m.html}">`);
+    html = cambiar(html, /<title>[^<]*<\/title>/, `<title>${escapar(m.titulo)}</title>`);
+    html = cambiar(html, /<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${urlDe(i)}" />`);
+    html = cambiar(
+      html,
+      /<main id="estatico">[\s\S]*?<\/main>/,
+      `<main id="estatico"><h1>${escapar(m.h1)}</h1><p>${escapar(m.descripcion)}</p></main>`,
+    );
     html = fijar(html, 'name', 'description', m.descripcion);
     html = fijar(html, 'property', 'og:url', urlDe(i));
     html = fijar(html, 'property', 'og:title', m.titulo);

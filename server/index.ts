@@ -408,6 +408,8 @@ async function start() {
     app.use(express.static('dist', { maxAge: '1h', index: false }));
     app.get('/{*splat}', (req, res) => {
       res.set('Cache-Control', 'public, max-age=300');
+      // La app vive en una sola ruta: lo demas es 404 real (evita "soft 404" en Google).
+      if (req.path !== '/') res.status(404).set('X-Robots-Tag', 'noindex');
       res.type('html').send(paginas[idiomaTarjeta(req.query.lang)]);
     });
   } else {

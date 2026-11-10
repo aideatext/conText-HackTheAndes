@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#fbf8f3" />
-    <title>conText · AIdeaText</title>
+    <title>conText · Tutor socrático con IA que conecta tus ideas | AIdeaText</title>
+    <link rel="canonical" href="https://context.aideatext.ai/" />
     <meta
       name="description"
       content="conText, de AIdeaText: sube tu material, conversa con un tutor socrático y mira en vivo el grafo de las ideas que vas conectando. En español y en inglés."
@@ -94,7 +95,11 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Contenido para buscadores y rastreadores de IA que no ejecutan JavaScript.
+      React lo reemplaza al montar. El servidor lo cambia por idioma (server/meta.ts).
+    -->
+    <div id="root"><main id="estatico"><h1>conText: piensa tus ideas en voz alta y míralas conectarse</h1><p>Sube tu material, conversa con un tutor socrático que no hace la tarea por ti y mira en vivo el grafo de las ideas que conectas. En español y en inglés.</p></main></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
