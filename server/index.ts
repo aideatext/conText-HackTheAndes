@@ -406,6 +406,23 @@ async function start() {
     // los rastreadores de redes no ejecutan JavaScript. Por eso static no sirve index.html.
     const paginas = paginasPorIdioma(readFileSync('dist/index.html', 'utf-8'));
     app.use(express.static('dist', { maxAge: '1h', index: false }));
+
+    // «Cómo funciona»: una pagina aparte con el video, para no tocar la app.
+    // Es la UNICA que abre el iframe de YouTube (youtube-nocookie), por eso
+    // lleva su propia CSP y la app conserva la suya, sin terceros.
+    const comoFunciona: Record<string, string> = {
+      '/como-funciona': readFileSync('server/paginas/es.html', 'utf-8'),
+      '/en/how-it-works': readFileSync('server/paginas/en.html', 'utf-8'),
+    };
+    app.get(Object.keys(comoFunciona), (req, res) => {
+      res.set({
+        'Cache-Control': 'public, max-age=300',
+        'Content-Security-Policy':
+          "default-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'none'; " +
+          "frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'",
+      });
+      res.type('html').send(comoFunciona[req.path]);
+    });
     app.get('/{*splat}', (req, res) => {
       res.set('Cache-Control', 'public, max-age=300');
       // La app vive en una sola ruta: lo demas es 404 real (evita "soft 404" en Google).

@@ -10,6 +10,8 @@
 - Gratis para estudiantes, sostenido por donaciones.
 
 ## Enlaces
+- [Cómo funciona (video)](https://context.aideatext.ai/como-funciona)
+- [How it works (video)](https://context.aideatext.ai/en/how-it-works)
 - [conText (español)](https://context.aideatext.ai/)
 - [conText (English)](https://context.aideatext.ai/?lang=en)
 - [AIdeaText](https://aideatext.ai)

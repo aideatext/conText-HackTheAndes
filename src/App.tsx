@@ -347,6 +347,9 @@ export default function App() {
             </span>
           )}
           {esSesionInvitada() && <span className="text-tinta-suave/80">· {tx.apoyo.invitada}</span>}
+          <a href={tx.pie.videoRuta} className="text-tinta-suave/80 underline-offset-2 hover:text-azul hover:underline">
+            · {tx.pie.video}
+          </a>
           {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
           <span className="text-tinta-suave/80">
             · {tx.pie.consulta}{' '}

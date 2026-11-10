@@ -83,6 +83,8 @@ const es = {
     contador: (estudiantes: number, turnos: number, nodos: number) =>
       `· ${estudiantes} estudiantes ya conversaron aquí, ${turnos} veces, y conectaron ${nodos} ideas.`,
     consulta: 'Cualquier consulta:',
+    video: 'Mira cómo funciona (video)',
+    videoRuta: '/como-funciona',
   },
   errores: {
     noEsSesion: 'Ese archivo no es una sesión de conText.',
@@ -272,6 +274,8 @@ const en: Textos = {
     contador: (estudiantes: number, turnos: number, nodos: number) =>
       `· ${estudiantes} students have talked here, ${turnos} times, and connected ${nodos} ideas.`,
     consulta: 'Any questions:',
+    video: 'See how it works (video)',
+    videoRuta: '/en/how-it-works',
   },
   errores: {
     noEsSesion: "That file isn't a conText session.",

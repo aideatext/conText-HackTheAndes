@@ -32,4 +32,14 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://context.aideatext.ai/?lang=fr" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://context.aideatext.ai/" />
   </url>
+  <url>
+    <loc>https://context.aideatext.ai/como-funciona</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://context.aideatext.ai/como-funciona" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://context.aideatext.ai/en/how-it-works" />
+  </url>
+  <url>
+    <loc>https://context.aideatext.ai/en/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://context.aideatext.ai/como-funciona" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://context.aideatext.ai/en/how-it-works" />
+  </url>
 </urlset>
