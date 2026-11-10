@@ -6,10 +6,10 @@
  *    si existe, el QR. conText no cobra ni procesa pagos: el dinero va de la
  *    app del que agradece a la cuenta, sin pasar por aqui.
  *
- *      GRACIAS_YAPE_NUMERO   celular Yape (Peru), p. ej. 987 654 321
+ *      GRACIAS_YAPE_NUMERO   celular Yape (Peru); por defecto el de AIdeaText, "off" lo apaga
  *      GRACIAS_YAPE_NOMBRE   titular que vera quien envia
  *      GRACIAS_YAPE_QR_PNG   opcional: el QR de Yape, PNG en base64
- *      GRACIAS_DIMO_NUMERO   celular DiMo (Mexico), 10 digitos
+ *      GRACIAS_DIMO_NUMERO   celular DiMo (Mexico); por defecto el de AIdeaText, "off" lo apaga
  *      GRACIAS_DIMO_NOMBRE   titular / banco que vera quien envia
  *      GRACIAS_DIMO_QR_PNG   opcional: QR, PNG en base64
  *
@@ -51,6 +51,17 @@ function png(variable: string): Buffer | null {
 
 const texto = (v: string) => process.env[v]?.trim().slice(0, 80) || null;
 
+// Los numeros no son secretos (se muestran a todos); van aqui para no depender
+// de configurar Render. Una variable GRACIAS_*_NUMERO los reemplaza; "off" lo apaga.
+const NUMERO_POR_DEFECTO: Record<MedioGracias, string> = {
+  yape: '+51 975 824 660',
+  dimo: '+52 55 4722 4305',
+};
+const numero = (id: MedioGracias) => {
+  const v = texto(`GRACIAS_${id.toUpperCase()}_NUMERO`);
+  return v?.toLowerCase() === 'off' ? null : (v ?? NUMERO_POR_DEFECTO[id]);
+};
+
 // ── Modo donacion (dormido) ──────────────────────────────────────────────
 function modoDonacion(): 'off' | 'cafe' | 'beca' {
   if (process.env.MODO_DONACION?.trim().toLowerCase() !== 'on') return 'off';
@@ -65,7 +76,7 @@ export function rutasApoyo(app: Express) {
   const medios = (['yape', 'dimo'] as const)
     .map((id) => {
       const V = `GRACIAS_${id.toUpperCase()}`;
-      return { id, numero: texto(`${V}_NUMERO`), nombre: texto(`${V}_NOMBRE`), qr: png(`${V}_QR_PNG`) };
+      return { id, numero: numero(id), nombre: texto(`${V}_NOMBRE`), qr: png(`${V}_QR_PNG`) };
     })
     .filter((m) => m.numero);
 
