@@ -214,6 +214,20 @@ const es = {
     archivo: 'mi-resumen-context.pdf',
   },
   apoyo: {
+    gracias: {
+      boton: 'Gracias',
+      titulo: '💛 ¿Te sirvió conText?',
+      texto:
+        'conText es gratis. Si quieres agradecer, envía lo que quieras desde tu celular. Elige tu país:',
+      yape: { pais: 'Perú', medio: 'Yape', pasos: 'Abre Yape → Yapear → escanea o escribe el número → elige el monto' },
+      dimo: { pais: 'México', medio: 'DiMo', pasos: 'Abre la app de tu banco → DiMo → envía al celular → elige el monto' },
+      numero: 'Celular',
+      titular: 'A nombre de',
+      copiar: 'Copiar',
+      copiado: 'Copiado',
+      altQr: (medio: string) => `Código QR de ${medio} para agradecer a AIdeaText`,
+      privacidad: 'El envío va directo de tu app a AIdeaText. conText no ve tus datos bancarios.',
+    },
     cafe: {
       boton: 'Donación',
       titulo: '💛 Haz una donación',
@@ -385,6 +399,19 @@ const en: Textos = {
     archivo: 'my-context-summary.pdf',
   },
   apoyo: {
+    gracias: {
+      boton: 'Thanks',
+      titulo: '💛 Did conText help you?',
+      texto: 'conText is free. If you want to say thanks, send any amount from your phone. Choose your country:',
+      yape: { pais: 'Peru', medio: 'Yape', pasos: 'Open Yape → Yapear → scan or type the number → choose the amount' },
+      dimo: { pais: 'Mexico', medio: 'DiMo', pasos: 'Open your bank app → DiMo → send to the phone number → choose the amount' },
+      numero: 'Phone',
+      titular: 'Recipient',
+      copiar: 'Copy',
+      copiado: 'Copied',
+      altQr: (medio: string) => `${medio} QR code to thank AIdeaText`,
+      privacidad: 'The transfer goes straight from your app to AIdeaText. conText never sees your bank details.',
+    },
     cafe: {
       boton: 'Donate',
       titulo: '💛 Make a donation',

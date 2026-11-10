@@ -132,12 +132,18 @@ export async function getStats(): Promise<Stats> {
   return (await jsonOrThrow(await fetch('/api/stats'))) as Stats;
 }
 
-export interface Apoyo {
-  modo: 'off' | 'cafe' | 'beca';
+export interface MedioGracias {
+  id: 'yape' | 'dimo';
+  numero: string;
+  nombre: string | null;
   qr: string | null;
-  pagina: string | null;
-  precio: number;
 }
+
+/** `gracias` es lo vigente (Yape / DiMo). `cafe` y `beca` son el modo donacion, dormido. */
+export type Apoyo =
+  | { modo: 'off' }
+  | { modo: 'gracias'; medios: MedioGracias[] }
+  | { modo: 'cafe' | 'beca'; qr: string | null; pagina: string | null; precio: number };
 
 export async function getApoyo(): Promise<Apoyo> {
   return (await jsonOrThrow(await fetch('/api/apoyo'))) as Apoyo;
