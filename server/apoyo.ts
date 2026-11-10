@@ -61,6 +61,15 @@ const numero = (id: MedioGracias) => {
   const v = texto(`GRACIAS_${id.toUpperCase()}_NUMERO`);
   return v?.toLowerCase() === 'off' ? null : (v ?? NUMERO_POR_DEFECTO[id]);
 };
+const NOMBRE_POR_DEFECTO: Record<MedioGracias, string | null> = {
+  yape: 'Manuel Vargas Alegria',
+  dimo: 'Manuel Vargas Alegria',
+};
+// QR publicados como archivos estaticos (public/img). Un PNG en GRACIAS_*_QR_PNG gana.
+const QR_ESTATICO: Record<MedioGracias, string | null> = {
+  yape: '/img/yape-qr.jpg',
+  dimo: null,
+};
 
 // ── Modo donacion (dormido) ──────────────────────────────────────────────
 function modoDonacion(): 'off' | 'cafe' | 'beca' {
@@ -76,7 +85,12 @@ export function rutasApoyo(app: Express) {
   const medios = (['yape', 'dimo'] as const)
     .map((id) => {
       const V = `GRACIAS_${id.toUpperCase()}`;
-      return { id, numero: numero(id), nombre: texto(`${V}_NOMBRE`), qr: png(`${V}_QR_PNG`) };
+      return {
+        id,
+        numero: numero(id),
+        nombre: texto(`${V}_NOMBRE`) ?? NOMBRE_POR_DEFECTO[id],
+        qr: png(`${V}_QR_PNG`),
+      };
     })
     .filter((m) => m.numero);
 
@@ -91,7 +105,7 @@ export function rutasApoyo(app: Express) {
           id: m.id,
           numero: m.numero,
           nombre: m.nombre,
-          qr: m.qr ? `/api/apoyo/${m.id}.png` : null,
+          qr: m.qr ? `/api/apoyo/${m.id}.png` : QR_ESTATICO[m.id],
         })),
       });
     }
