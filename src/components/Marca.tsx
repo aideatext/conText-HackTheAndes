@@ -10,25 +10,29 @@ import { useT } from '../i18n';
 
 export function Marca() {
   const t = useT();
+  // Cabecera estandar de AIdeaText (IDENTIDAD.md §5, repo aideatext-identidad):
+  // logotipo y sello al MISMO alto, el logotipo enlaza a la portada.
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <img
-        src="/img/logo-aideatext.png"
-        width={156}
-        height={156}
-        alt="AIdeaText"
-        className="h-10 w-10 shrink-0 sm:h-11 sm:w-11"
-      />
+      <a href="https://aideatext.ai" className="flex shrink-0 transition-opacity hover:opacity-80">
+        <img
+          src="/img/logo-aideatext.png"
+          width={156}
+          height={156}
+          alt="AIdeaText"
+          className="h-11 w-11 sm:h-12 sm:w-12"
+        />
+      </a>
       {/* Las dos credenciales van juntas: la leyenda no las separa. */}
       <img
         src="/img/nvidia-inception-color.svg"
         width={500}
         height={216}
         alt="NVIDIA Inception"
-        className="hidden h-9 w-auto shrink-0 sm:block"
+        className="hidden h-12 w-auto shrink-0 sm:block"
       />
-      <div className="min-w-0 sm:border-l sm:border-borde sm:pl-3">
-        <h1 className="titular text-lg leading-none tracking-tight sm:text-xl">conText</h1>
+      <div className="min-w-0 sm:border-l sm:border-borde sm:pl-3.5">
+        <h1 className="titular text-xl leading-tight tracking-tight sm:text-[1.35rem]">conText</h1>
         <p className="mt-0.5 truncate text-xs text-tinta-suave">
           {t.marca.lema}
         </p>
