@@ -88,7 +88,7 @@ const es = {
     contador: (estudiantes: number, turnos: number, nodos: number) =>
       `· ${estudiantes} estudiantes ya conversaron aquí, ${turnos} veces, y conectaron ${nodos} ideas.`,
     consulta: 'Cualquier consulta:',
-    video: 'Mira cómo funciona (video)',
+    video: 'Cómo funciona (video) y guía docente',
     videoRuta: '/como-funciona',
   },
   errores: {
@@ -285,7 +285,7 @@ const en: Textos = {
     contador: (estudiantes: number, turnos: number, nodos: number) =>
       `· ${estudiantes} students have talked here, ${turnos} times, and connected ${nodos} ideas.`,
     consulta: 'Any questions:',
-    video: 'See how it works (video)',
+    video: 'How it works (video) and teacher guide',
     videoRuta: '/en/how-it-works',
   },
   errores: {

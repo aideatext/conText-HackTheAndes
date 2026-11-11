@@ -42,4 +42,6 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://context.aideatext.ai/como-funciona" />
     <xhtml:link rel="alternate" hreflang="en" href="https://context.aideatext.ai/en/how-it-works" />
   </url>
+  <url><loc>https://context.aideatext.ai/recursos/guia-docente-context-es.pdf</loc></url>
+  <url><loc>https://context.aideatext.ai/recursos/teacher-guide-context-en.pdf</loc></url>
 </urlset>

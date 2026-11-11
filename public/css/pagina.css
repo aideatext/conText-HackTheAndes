@@ -14,3 +14,8 @@ main h1 { font-size: clamp(1.9rem, 1.5rem + 2vw, 2.6rem); margin: 0 0 .75rem; }
 .pasos h3 { margin: 0 0 .25rem; font-size: 1.1rem; }
 .pasos p { margin: 0; color: var(--ait-tinta-suave); }
 footer { border-top: 1px solid var(--ait-borde); padding: 1rem 1.25rem; text-align: center; font-size: .72rem; color: var(--ait-tinta-suave); }
+.recursos { margin: 2.5rem 0 1rem; padding: 1.4rem 1.5rem; border: 2px solid var(--ait-azul); border-radius: var(--ait-radio-grande); background: #fff; }
+.recursos h2 { margin: 0 0 .5rem; font-size: 1.5rem; }
+.recursos p { color: var(--ait-tinta-suave); }
+.recursos .descarga { font-size: 1rem; padding: .7rem 1.2rem; }
+.recursos .otra { margin-left: 1rem; font-size: .9rem; color: var(--ait-azul-hondo); }

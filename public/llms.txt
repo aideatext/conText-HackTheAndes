@@ -12,6 +12,8 @@
 ## Enlaces
 - [Cómo funciona (video)](https://context.aideatext.ai/como-funciona)
 - [How it works (video)](https://context.aideatext.ai/en/how-it-works)
+- [Guía docente (PDF)](https://context.aideatext.ai/recursos/guia-docente-context-es.pdf)
+- [Teacher guide (PDF)](https://context.aideatext.ai/recursos/teacher-guide-context-en.pdf)
 - [conText (español)](https://context.aideatext.ai/)
 - [conText (English)](https://context.aideatext.ai/?lang=en)
 - [AIdeaText](https://aideatext.ai)
