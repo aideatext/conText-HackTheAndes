@@ -18,4 +18,4 @@ footer { border-top: 1px solid var(--ait-borde); padding: 1rem 1.25rem; text-ali
 .recursos h2 { margin: 0 0 .5rem; font-size: 1.5rem; }
 .recursos p { color: var(--ait-tinta-suave); }
 .recursos .descarga { font-size: 1rem; padding: .7rem 1.2rem; }
-.recursos .otra { margin-left: 1rem; font-size: .9rem; color: var(--ait-azul-hondo); }
+.recursos .otra { margin-left: 1rem; font-size: .9rem; color: var(--ait-azul-hondo); white-space: nowrap; display: inline-block; margin-top: .4rem; }

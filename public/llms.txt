@@ -14,6 +14,8 @@
 - [How it works (video)](https://context.aideatext.ai/en/how-it-works)
 - [Guía docente (PDF)](https://context.aideatext.ai/recursos/guia-docente-context-es.pdf)
 - [Teacher guide (PDF)](https://context.aideatext.ai/recursos/teacher-guide-context-en.pdf)
+- [Guia do professor (PDF, português)](https://context.aideatext.ai/recursos/guia-professor-context-pt.pdf)
+- [Guide du professeur (PDF, français)](https://context.aideatext.ai/recursos/guide-professeur-context-fr.pdf)
 - [conText (español)](https://context.aideatext.ai/)
 - [conText (English)](https://context.aideatext.ai/?lang=en)
 - [AIdeaText](https://aideatext.ai)
