@@ -267,7 +267,11 @@ export async function stats() {
         const r = await dynamo.send(
           new ScanCommand({
             TableName: tablaDynamo,
-            ProjectionExpression: 'sessionId, turns, nodes',
+            ProjectionExpression: 'sessionId, turns, nodes, expiraEn',
+            // Solo sesiones vivas: fuera los eventos de uso y lo ya vencido que
+            // el TTL de DynamoDB aun no ha recogido.
+            FilterExpression: 'NOT begins_with(sessionId, :u) AND expiraEn > :ahora',
+            ExpressionAttributeValues: { ':u': 'uso#', ':ahora': Math.floor(Date.now() / 1000) },
             ExclusiveStartKey: inicio,
           }),
         );
@@ -283,7 +287,8 @@ export async function stats() {
     } catch (err: any) {
       console.warn('[store] DynamoDB: fallo al leer estadisticas:', err?.message);
     }
-  } else if (table) {
+  }
+  if (!tablaDynamo && table) {
     try {
       await tableReady;
       for await (const e of table.listEntities<{
@@ -307,7 +312,8 @@ export async function stats() {
   }
 
   for (const s of memory.values()) {
-    if (counted.has(s.sessionId)) continue;
+    // Con DynamoDB la tabla es la fuente de verdad; la memoria es solo cache.
+    if (tablaDynamo || counted.has(s.sessionId)) continue;
     sesiones++;
     turnos += s.turns;
     nodos += s.graph.nodes.length;

@@ -175,6 +175,20 @@ async function start() {
   });
 
   /** Borrar todo: la conversacion, el grafo y el archivo desaparecen del servidor. */
+  /**
+   * Una descarga (xml, png o pdf). Los archivos se arman en el navegador, asi
+   * que el servidor solo se entera si se lo dicen: esto anota la marca de conteo
+   * (sin sessionId ni contenido, ver uso.ts).
+   */
+  const descargaLimiter = rateLimit({ windowMs: 60 * 1000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false });
+  app.post('/api/descarga', descargaLimiter, async (req, res) => {
+    const tipo = String(req.body?.tipo ?? '');
+    if (!['xml', 'png', 'pdf'].includes(tipo)) return res.status(400).json({ error: 'tipo' });
+    const session = req.body?.sessionId ? await getSession(String(req.body.sessionId)) : null;
+    void anota('descarga', { ref: session?.ref ?? null, detalle: tipo });
+    res.status(204).end();
+  });
+
   app.delete('/api/session/:id', async (req, res) => {
     const session = await getSession(req.params.id);
     void anota('borrado', { ref: session?.ref ?? null });
@@ -194,6 +208,7 @@ async function start() {
     }
 
     const session = newSession();
+    void anota('retoma');
     session.messages = parsed.data.messages.slice(-60);
     session.summary = parsed.data.summary;
     session.materialName = parsed.data.materialName;

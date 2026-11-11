@@ -23,6 +23,17 @@ import { TableClient } from '@azure/data-tables';
 import { DefaultAzureCredential } from '@azure/identity';
 import { randomUUID } from 'node:crypto';
 import type { RequestHandler } from 'express';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+
+/**
+ * En AWS los eventos van a la MISMA tabla que las sesiones (DYNAMODB_TABLE),
+ * con clave `uso#<fecha>#<id>` y SIN `expiraEn`: el TTL no los toca, asi que
+ * el conteo no caduca. Una sola tabla = un solo permiso para el usuario de Render.
+ */
+const tablaDynamo = process.env.DYNAMODB_TABLE?.trim() || null;
+const dynamo = tablaDynamo ? DynamoDBDocumentClient.from(new DynamoDBClient({})) : null;
+const PREFIJO_USO = 'uso#';
 
 export type TipoEvento =
   /** Alguien abrio conText y se le creo una sesion. Incluye rebotes y rastreadores. */
@@ -36,7 +47,11 @@ export type TipoEvento =
   /** Pulso "Borrar todo". */
   | 'borrado'
   /** Choco con un tope de la prueba. El detalle dice con cual. */
-  | 'tope';
+  | 'tope'
+  /** Descargo un archivo. El detalle dice cual: xml, png o pdf. */
+  | 'descarga'
+  /** Subio un XML (o JSON viejo) para continuar una conversacion. */
+  | 'retoma';
 
 export interface Evento {
   tipo: TipoEvento;
@@ -57,7 +72,9 @@ let table: TableClient | null = null;
 let tableReady: Promise<void> | null = null;
 
 const endpoint = process.env.AZURE_TABLES_ENDPOINT?.trim();
-if (endpoint) {
+if (tablaDynamo) {
+  console.log('[uso] medicion perpetua en DynamoDB');
+} else if (endpoint) {
   table = new TableClient(endpoint, TABLA, new DefaultAzureCredential());
   tableReady = table
     .createTable()
@@ -122,6 +139,21 @@ export async function anota(
     dia: ahora.toISOString().slice(0, 10),
   };
 
+  if (dynamo && tablaDynamo) {
+    try {
+      await dynamo.send(
+        new PutCommand({
+          TableName: tablaDynamo,
+          Item: { sessionId: `${PREFIJO_USO}${evento.fecha}#${randomUUID()}`, ...evento },
+        }),
+      );
+    } catch (err: any) {
+      console.warn('[uso] DynamoDB: no se pudo anotar el evento:', err?.message);
+      memoria.push(evento);
+    }
+    return;
+  }
+
   if (!table) {
     memoria.push(evento);
     return;
@@ -151,6 +183,11 @@ interface Conteo {
   borrados: number;
   topes: number;
   nodos: number;
+  /** Archivos XML descargados: lo que permite continuar una conversacion. */
+  xml: number;
+  png: number;
+  pdf: number;
+  retomas: number;
 }
 
 const vacio = (): Conteo => ({
@@ -161,6 +198,10 @@ const vacio = (): Conteo => ({
   borrados: 0,
   topes: 0,
   nodos: 0,
+  xml: 0,
+  png: 0,
+  pdf: 0,
+  retomas: 0,
 });
 
 function suma(c: Conteo, e: Evento): void {
@@ -170,10 +211,41 @@ function suma(c: Conteo, e: Evento): void {
   else if (e.tipo === 'material') c.materiales++;
   else if (e.tipo === 'borrado') c.borrados++;
   else if (e.tipo === 'tope') c.topes++;
+  else if (e.tipo === 'retoma') c.retomas++;
+  else if (e.tipo === 'descarga') {
+    if (e.detalle === 'xml') c.xml++;
+    else if (e.detalle === 'png') c.png++;
+    else if (e.detalle === 'pdf') c.pdf++;
+  }
   c.nodos += e.nodos ?? 0;
 }
 
 async function todos(): Promise<Evento[]> {
+  if (dynamo && tablaDynamo) {
+    try {
+      const filas: Evento[] = [];
+      let inicio: Record<string, unknown> | undefined;
+      do {
+        const r = await dynamo.send(
+          new ScanCommand({
+            TableName: tablaDynamo,
+            FilterExpression: 'begins_with(sessionId, :p)',
+            ExpressionAttributeValues: { ':p': PREFIJO_USO },
+            ExclusiveStartKey: inicio,
+          }),
+        );
+        for (const e of (r.Items ?? []) as Evento[]) {
+          filas.push({ tipo: e.tipo, ref: e.ref ?? null, detalle: e.detalle ?? null,
+                       nodos: e.nodos ?? 0, fecha: e.fecha, dia: e.dia });
+        }
+        inicio = r.LastEvaluatedKey;
+      } while (inicio);
+      return [...filas, ...memoria];
+    } catch (err: any) {
+      console.warn('[uso] DynamoDB: no se pudieron leer los eventos:', err?.message);
+      return [...memoria];
+    }
+  }
   if (!table) return [...memoria];
   try {
     await tableReady;
@@ -206,6 +278,10 @@ export async function totalesPublicos() {
     sesionesConTurnos: c.conversaron,
     turnos: c.turnos,
     nodos: c.nodos,
+    descargasXml: c.xml,
+    descargasPng: c.png,
+    descargasPdf: c.pdf,
+    retomas: c.retomas,
   };
 }
 
@@ -250,6 +326,6 @@ export async function resumenDeUso() {
     porDia: Object.fromEntries(porDia),
     materialesPorTipo,
     topesPorTipo,
-    persistencia: table ? 'azure-table-storage' : 'memoria',
+    persistencia: tablaDynamo ? 'dynamodb' : table ? 'azure-table-storage' : 'memoria',
   };
 }

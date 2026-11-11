@@ -241,3 +241,13 @@ export async function sendTurn(sessionId: string, text: string, h: TurnHandlers)
     }
   }
 }
+
+/** Cuenta una descarga (xml, png, pdf). Si falla, la descarga sigue igual. */
+export function contarDescarga(tipo: 'xml' | 'png' | 'pdf', sessionId?: string) {
+  void fetch('/api/descarga', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo, sessionId }),
+    keepalive: true,
+  }).catch(() => {});
+}

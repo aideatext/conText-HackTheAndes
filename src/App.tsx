@@ -10,6 +10,7 @@ import {
   getStats,
   resumeOrCreateSession,
   retomarSesion,
+  contarDescarga,
   sendTurn,
   uploadMaterial,
   type SesionExportada,
@@ -107,13 +108,17 @@ export default function App() {
       turns: metrics.turnos,
     };
     descargar(new Blob([sesionAXml(datos)], { type: 'application/xml' }), tx.archivoSesion);
+    contarDescarga('xml', session?.sessionId);
   }
 
   /** [2] El grafo como imagen. */
   async function descargarPng() {
     if (!svgRef.current) return;
     const png = await svgAPng(svgRef.current);
-    if (png) descargar(new Blob([png as BlobPart], { type: 'image/png' }), `${tx.grafo.archivo}.png`);
+    if (png) {
+      descargar(new Blob([png as BlobPart], { type: 'image/png' }), `${tx.grafo.archivo}.png`);
+      contarDescarga('png', session?.sessionId);
+    }
   }
 
   async function retomar(archivo: File) {
@@ -285,6 +290,7 @@ export default function App() {
         materialMime,
         svg: svgRef.current,
       });
+      contarDescarga('pdf', session?.sessionId);
     } catch (e: any) {
       setChatError(tx.errores.noPdf);
     } finally {
