@@ -353,8 +353,12 @@ export default function App() {
             </span>
           )}
           {esSesionInvitada() && <span className="text-tinta-suave/80">· {tx.apoyo.invitada}</span>}
-          <a href={tx.pie.videoRuta} className="text-tinta-suave/80 underline-offset-2 hover:text-azul hover:underline">
-            · {tx.pie.video}
+          {/* Resaltado sin romper el pie minimalista: es lo primero que conviene ver. */}
+          <a
+            href={tx.pie.videoRuta}
+            className="inline-flex items-center gap-1 rounded-full bg-azul px-2.5 py-0.5 font-semibold text-white shadow-sm transition-colors hover:bg-azul-hondo"
+          >
+            ▶ {tx.pie.video}
           </a>
           {/* Lo que pasa con los datos lo dice MiSesion; el pie lleva lo que no cabe ahi: a quien escribir. */}
           <span className="text-tinta-suave/80">
