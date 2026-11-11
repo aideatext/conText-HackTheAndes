@@ -1,0 +1,14 @@
+.uso { max-width: 70rem; }
+.uso form { max-width: 32rem; }
+.uso label { display: block; font-weight: 600; margin-bottom: .4rem; }
+.uso .fila { display: flex; gap: .5rem; }
+.uso input { flex: 1; padding: .5rem .7rem; border: 1px solid var(--ait-borde); border-radius: var(--ait-radio-chico); font: inherit; background: #fff; }
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .75rem; margin: 1.5rem 0; }
+.tarjeta { background: var(--ait-panel); border: 1px solid var(--ait-borde); border-radius: var(--ait-radio); padding: .8rem 1rem; }
+.tarjeta b { display: block; font: 600 1.8rem/1.1 var(--ait-serif); color: var(--ait-azul-hondo); }
+.tarjeta span { font-size: .8rem; color: var(--ait-tinta-suave); }
+.tabla { overflow-x: auto; }
+.uso table { border-collapse: collapse; width: 100%; font-size: .85rem; background: #fff; }
+.uso th, .uso td { border: 1px solid var(--ait-borde); padding: .35rem .6rem; text-align: right; white-space: nowrap; }
+.uso th { background: var(--ait-panel); font-weight: 600; }
+.uso td:first-child, .uso th:first-child { text-align: left; font-family: var(--ait-mono); }

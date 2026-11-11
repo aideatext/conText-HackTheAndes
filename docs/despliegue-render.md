@@ -45,7 +45,7 @@ El puerto no se configura: Render pasa su `PORT` y el servidor lo lee.
 | `ANTHROPIC_API_KEY` | Clave de la Console, en el workspace `context-demo` |
 | `CLAUDE_MODEL` | `claude-opus-5` |
 | `NODE_ENV` | `production` |
-| `USO_TOKEN` | Opcional: abre `/api/uso` |
+| `USO_TOKEN` | Abre el panel privado **https://context.aideatext.ai/uso** (uso por día y por campaña) y `/api/uso`. Sin él, los dos dan 404 |
 
 Ninguna `AZURE_*` y ninguna `ANTHROPIC_ENTRA_AUDIENCE`.
 

@@ -429,6 +429,20 @@ async function start() {
       '/como-funciona': readFileSync('server/paginas/es.html', 'utf-8'),
       '/en/how-it-works': readFileSync('server/paginas/en.html', 'utf-8'),
     };
+    // Panel privado de uso por dia: la pagina es publica pero no muestra nada
+    // sin USO_TOKEN (la pide en el navegador y llama a /api/uso). noindex.
+    const panelUso = readFileSync('server/paginas/uso.html', 'utf-8');
+    app.get('/uso', (_req, res) => {
+      res.set({
+        'Cache-Control': 'no-store',
+        'X-Robots-Tag': 'noindex, nofollow',
+        'Content-Security-Policy':
+          "default-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'self'; " +
+          "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+      });
+      res.type('html').send(panelUso);
+    });
+
     app.get(Object.keys(comoFunciona), (req, res) => {
       res.set({
         'Cache-Control': 'public, max-age=300',

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Uso de conText · AIdeaText</title>
+  <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/aideatext.css?v=1" />
+  <link rel="stylesheet" href="/css/pagina.css?v=2" />
+  <link rel="stylesheet" href="/css/uso.css?v=1" />
+</head>
+<body class="ait">
+  <header class="ait-cabecera">
+    <div class="ait-lockup">
+      <a href="https://aideatext.ai"><img class="ait-logo" src="/img/logo-aideatext.png" width="156" height="156" alt="AIdeaText" /></a>
+      <a class="ait-producto" href="/"><span class="ait-nombre">conText</span><span class="ait-lema">Uso por día</span></a>
+    </div>
+  </header>
+  <main class="uso">
+    <h1>Uso de conText</h1>
+    <form id="acceso">
+      <label for="token">Token de uso (<code>USO_TOKEN</code> de Render)</label>
+      <div class="fila">
+        <input id="token" type="password" autocomplete="off" required />
+        <button class="ait-boton" type="submit">Ver</button>
+      </div>
+      <p class="nota">El token se guarda solo en esta pestaña y se borra al cerrarla. No se envía a nadie más que a conText.</p>
+    </form>
+    <p id="estado" class="nota"></p>
+    <section id="resultado" hidden>
+      <div id="totales" class="tarjetas"></div>
+      <h2>Por día</h2>
+      <div class="tabla"><table id="dias"></table></div>
+      <h2>Por campaña (<code>?ref=</code>)</h2>
+      <div class="tabla"><table id="refs"></table></div>
+    </section>
+  </main>
+  <script src="/js/uso.js?v=1"></script>
+</body>
+</html>
