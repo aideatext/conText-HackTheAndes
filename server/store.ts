@@ -148,14 +148,14 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 /**
- * Caducidad: las sesiones que nadie toca en 7 dias se borran solas, igual que
- * los archivos. Sin esto, "no guardamos nada" seria mentira para quien se va
- * sin pulsar el boton.
+ * Caducidad: una sesion que nadie toca en UNA HORA se borra sola, con su
+ * archivo. Es lo que promete la pantalla («tus datos se borran solos en una
+ * hora»); quien quiere seguir otro dia se lleva el XML. Antes eran 7 dias.
  */
-const DIAS_DE_VIDA = 7;
+const VIDA_MS = 60 * 60 * 1000;
 
 export async function sweepExpired(): Promise<number> {
-  const limite = Date.now() - DIAS_DE_VIDA * 24 * 60 * 60 * 1000;
+  const limite = Date.now() - VIDA_MS;
   let borradas = 0;
 
   for (const [id, s] of memory) {

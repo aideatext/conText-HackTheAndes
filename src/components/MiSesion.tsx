@@ -3,7 +3,7 @@
  * o borrarlo. Y, dicho sin letra chica, que pasa con sus datos.
  */
 import { useRef, useState } from 'react';
-import { FolderOpen, Loader2, Save, ShieldCheck, Trash2 } from 'lucide-react';
+import { Download, FolderOpen, Loader2, ShieldCheck, Trash2 } from 'lucide-react';
 import Plegable from './Plegable';
 import { useT } from '../i18n';
 
@@ -31,11 +31,12 @@ export default function MiSesion({
     <Plegable
       aviso
       titulo={t.titulo}
-      icono={<ShieldCheck className="h-3.5 w-3.5 text-azul" />}
-      abierto={!hayAlgo}
+      icono={<ShieldCheck className="h-3.5 w-3.5 text-rojo" />}
+      abierto
     >
       <div className="space-y-2">
-        <p className="text-[11px] leading-snug text-tinta-suave">{t.explica}</p>
+        <p className="text-[11px] leading-snug text-tinta">{t.explica}</p>
+        <p className="rounded-chico bg-rojo/10 px-2 py-1.5 text-[11px] font-semibold leading-snug text-rojo">{t.caduca}</p>
 
         <div className="flex flex-wrap gap-1.5">
           <button
@@ -43,7 +44,7 @@ export default function MiSesion({
             disabled={!hayAlgo || ocupado}
             className="flex items-center gap-1.5 rounded-chico bg-white px-2.5 py-1.5 text-[11px] font-medium text-tinta ring-1 ring-borde transition-colors hover:bg-papel disabled:opacity-40"
           >
-            <Save className="h-3.5 w-3.5" /> {t.guardar}
+            <Download className="h-3.5 w-3.5" /> {t.guardar}
           </button>
 
           <button
@@ -91,7 +92,7 @@ export default function MiSesion({
         <input
           ref={archivoRef}
           type="file"
-          accept="application/json,.json"
+          accept=".xml,application/xml,text/xml,.json,application/json"
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];

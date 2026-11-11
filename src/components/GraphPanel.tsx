@@ -1,19 +1,8 @@
 import { useState } from 'react';
-import { Download, Image as ImageIcon } from 'lucide-react';
 import type { Graph, Metrics, Origin } from '../../shared/types';
 import GraphVisualization, { ORIGIN_COLOR } from './GraphVisualization';
 import { useT } from '../i18n';
-import { svgAPng } from '../svgPng';
 import MetricsPanel from './MetricsPanel';
-
-function download(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 export default function GraphPanel({
   graph,
@@ -44,31 +33,6 @@ export default function GraphPanel({
             />
             {t.misConexiones}
           </label>
-          <button
-            onClick={() =>
-              download(
-                new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' }),
-                `${t.archivo}.json`,
-              )
-            }
-            disabled={empty}
-            title={t.bajarJson}
-            className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
-          >
-            <Download className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={async () => {
-              if (!svgRef.current) return;
-              const png = await svgAPng(svgRef.current);
-              if (png) download(new Blob([png as BlobPart], { type: 'image/png' }), `${t.archivo}.png`);
-            }}
-            disabled={empty}
-            title={t.bajarPng}
-            className="rounded-full bg-panel p-2 ring-1 ring-borde disabled:opacity-40"
-          >
-            <ImageIcon className="h-3.5 w-3.5" />
-          </button>
         </div>
       </div>
 

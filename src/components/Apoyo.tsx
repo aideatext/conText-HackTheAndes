@@ -12,7 +12,7 @@ import { GraduationCap, HandHeart, Heart, X } from 'lucide-react';
 import { getApoyo, type Apoyo as DatosApoyo, type MedioGracias } from '../api';
 import { useT } from '../i18n';
 
-export default function Apoyo() {
+export default function Apoyo({ numero }: { numero?: number } = {}) {
   const t = useT().apoyo;
   const [datos, setDatos] = useState<DatosApoyo | null>(null);
   const [abierto, setAbierto] = useState(false);
@@ -40,12 +40,17 @@ export default function Apoyo() {
     <>
       <button
         onClick={() => setAbierto(true)}
-        className="flex shrink-0 items-center gap-1.5 rounded-medio bg-rojo px-3 py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
+        className="flex shrink-0 items-center gap-1.5 rounded-medio bg-rojo px-2.5 py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
       >
+        {numero !== undefined && (
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rojo">
+            {numero}
+          </span>
+        )}
         <Icono className="h-4 w-4" />
-        {/* En un telefono el rotulo no cabe: queda el icono, como en "Llevarme mi resumen". */}
-        <span className="hidden sm:inline">{boton}</span>
-        <span className="sr-only sm:hidden">{boton}</span>
+        {/* En un telefono el rotulo no cabe: queda el icono, como en las descargas. */}
+        <span className="hidden md:inline">{boton}</span>
+        <span className="sr-only md:hidden">{boton}</span>
       </button>
 
       {abierto && (

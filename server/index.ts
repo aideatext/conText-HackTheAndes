@@ -439,9 +439,9 @@ async function start() {
     console.log(`conText escuchando en http://localhost:${PORT} (modelo ${MODEL}, credencial ${AUTH})`);
   });
 
-  // Caducidad de las sesiones: al arrancar y cada seis horas.
+  // Caducidad de las sesiones (una hora): al arrancar y cada cinco minutos.
   void sweepExpired();
-  setInterval(() => void sweepExpired(), 6 * 60 * 60 * 1000).unref();
+  setInterval(() => void sweepExpired(), 5 * 60 * 1000).unref();
 }
 
 start().catch((err) => {

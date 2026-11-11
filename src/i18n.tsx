@@ -70,7 +70,12 @@ const es = {
     lema: 'Piensa tus ideas en voz alta y míralas conectarse.',
   },
   cabecera: {
-    resumen: 'Llevarme mi resumen',
+    xml: 'Grafo XML',
+    xmlTitulo: 'Descarga tu conversación y tu grafo (XML). Súbelo después para seguir conversando.',
+    png: 'Grafo PNG',
+    pngTitulo: 'Descarga el grafo como imagen',
+    resumen: 'Reporte PDF',
+    resumenTitulo: 'Descarga el reporte en PDF',
     idioma: 'Idioma',
   },
   pestanas: { material: 'Material', chat: 'Conversación', grafo: 'Grafo' },
@@ -130,13 +135,14 @@ const es = {
     titulo: 'Tu sesión es tuya',
     explica: (
       <>
-        Si pulsas <strong>Borrar todo</strong>, tu conversación, tu grafo y tu archivo desaparecen
-        del servidor en el momento. Si no lo pulsas, se borran solos a los 7 días. Guárdate el JSON
-        y podrás retomar la conversación cuando quieras.
+        Descarga esta conversación en los diferentes formatos y continúa conversando después
+        subiendo el archivo <strong>XML</strong> (botón <strong>1 · Grafo XML</strong>).
+        Recomendamos que, después de descargar, <strong>borres la sesión</strong>.
       </>
     ),
-    guardar: 'Guardar sesión',
-    retomar: 'Retomar',
+    caduca: 'Si no la borras, tus datos se borran solos del servidor en una hora.',
+    guardar: '1 · Grafo XML',
+    retomar: 'Subir XML y continuar',
     borrar: 'Borrar todo',
     confirmar: 'Sí, borrar todo',
     cancelar: 'Cancelar',
@@ -151,9 +157,9 @@ const es = {
     detenerLectura: 'Detener la lectura',
     leer: 'Leer en voz alta',
     quedan: (n: number) =>
-      `Te quedan ${n} ${n === 1 ? 'turno' : 'turnos'} en esta prueba. Puedes llevarte tu resumen en PDF cuando quieras.`,
+      `Te quedan ${n} ${n === 1 ? 'turno' : 'turnos'} en esta prueba. Descarga el botón 1 · Grafo XML para poder continuar después.`,
     final:
-      'Llegaste al final de esta prueba. Llévate tu resumen en PDF, y si quieres empezar de nuevo pulsa “Borrar todo”.',
+      'Llegaste al final de esta prueba. Descarga el 1 · Grafo XML (para continuar después) y el 3 · Reporte PDF; luego pulsa “Borrar todo”.',
     escucho: 'Te escucho…',
     conectando: 'Conectando…',
     escribe: 'Escribe tu mensaje…',
@@ -250,7 +256,7 @@ const es = {
     cerrar: 'Cerrar',
     invitada: 'Esta sesión te la regaló alguien.',
   },
-  archivoSesion: 'mi-sesion-context.json',
+  archivoSesion: 'mi-sesion-context.xml',
   contacto: CONTACTO,
 };
 
@@ -261,7 +267,12 @@ const en: Textos = {
     lema: 'Think your ideas out loud and watch them connect.',
   },
   cabecera: {
-    resumen: 'Take my summary',
+    xml: 'Graph XML',
+    xmlTitulo: 'Download your conversation and graph (XML). Upload it later to keep talking.',
+    png: 'Graph PNG',
+    pngTitulo: 'Download the graph as an image',
+    resumen: 'PDF report',
+    resumenTitulo: 'Download the PDF report',
     idioma: 'Language',
   },
   pestanas: { material: 'Material', chat: 'Conversation', grafo: 'Graph' },
@@ -320,13 +331,14 @@ const en: Textos = {
     titulo: 'Your session is yours',
     explica: (
       <>
-        If you press <strong>Delete everything</strong>, your conversation, your graph and your file
-        disappear from the server right away. If you don't, they delete themselves after 7 days.
-        Save the JSON and you can pick the conversation back up whenever you like.
+        Download this conversation in the different formats and keep talking later by uploading
+        the <strong>XML</strong> file (button <strong>1 · Graph XML</strong>). We recommend that,
+        after downloading, you <strong>delete the session</strong>.
       </>
     ),
-    guardar: 'Save session',
-    retomar: 'Resume',
+    caduca: "If you don't delete it, your data deletes itself from the server in one hour.",
+    guardar: '1 · Graph XML',
+    retomar: 'Upload XML and continue',
     borrar: 'Delete everything',
     confirmar: 'Yes, delete everything',
     cancelar: 'Cancel',
@@ -341,9 +353,9 @@ const en: Textos = {
     detenerLectura: 'Stop reading aloud',
     leer: 'Read aloud',
     quedan: (n: number) =>
-      `You have ${n} ${n === 1 ? 'turn' : 'turns'} left in this trial. You can take your summary as a PDF whenever you like.`,
+      `You have ${n} ${n === 1 ? 'turn' : 'turns'} left in this trial. Download button 1 · Graph XML so you can continue later.`,
     final:
-      'You reached the end of this trial. Take your summary as a PDF, and if you want to start over press “Delete everything”.',
+      'You reached the end of this trial. Download 1 · Graph XML (to continue later) and 3 · PDF report; then press “Delete everything”.',
     escucho: "I'm listening…",
     conectando: 'Connecting…',
     escribe: 'Write your message…',
@@ -436,7 +448,7 @@ const en: Textos = {
     cerrar: 'Close',
     invitada: 'Someone gifted you this session.',
   },
-  archivoSesion: 'my-context-session.json',
+  archivoSesion: 'my-context-session.xml',
   contacto: CONTACTO,
 };
 

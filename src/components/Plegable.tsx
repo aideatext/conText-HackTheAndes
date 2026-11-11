@@ -26,7 +26,7 @@ export default function Plegable({
     <details
       open={abierto}
       onToggle={(e) => setAbierto(e.currentTarget.open)}
-      className={`group rounded-medio ring-1 ${aviso ? 'bg-panel ring-rojo/30' : 'bg-white ring-borde'}`}
+      className={`group rounded-medio ${aviso ? 'bg-panel ring-2 ring-rojo/70' : 'bg-white ring-1 ring-borde'}`}
     >
       <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-semibold text-tinta select-none [&::-webkit-details-marker]:hidden">
         {icono}

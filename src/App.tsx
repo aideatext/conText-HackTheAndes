@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { leerSesion, sesionAXml } from './sesionXml';
+import { svgAPng } from './svgPng';
 import { Download, Loader2 } from 'lucide-react';
 import type { ChatMessage, Graph, GraphDelta, Metrics, SessionSnapshot } from '../shared/types';
 import {
@@ -45,6 +47,15 @@ function useIsDesktop() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
   return isDesktop;
+}
+
+function descargar(blob: Blob, nombre: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function App() {
@@ -95,21 +106,21 @@ export default function App() {
       materialName,
       turns: metrics.turnos,
     };
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' }),
-    );
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = tx.archivoSesion;
-    a.click();
-    URL.revokeObjectURL(url);
+    descargar(new Blob([sesionAXml(datos)], { type: 'application/xml' }), tx.archivoSesion);
+  }
+
+  /** [2] El grafo como imagen. */
+  async function descargarPng() {
+    if (!svgRef.current) return;
+    const png = await svgAPng(svgRef.current);
+    if (png) descargar(new Blob([png as BlobPart], { type: 'image/png' }), `${tx.grafo.archivo}.png`);
   }
 
   async function retomar(archivo: File) {
     setSesionOcupada(true);
     setChatError(null);
     try {
-      const snap = await retomarSesion(JSON.parse(await archivo.text()));
+      const snap = await retomarSesion(leerSesion(await archivo.text()));
       cargarSnapshot(snap);
       // El archivo original no viaja en el JSON: se avisa en vez de fingir.
       setMaterialUrl(null);
@@ -283,28 +294,23 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between gap-3 border-b border-borde bg-papel px-4 py-3">
+      {/* En un telefono las cuatro descargas pasan a su propia fila, debajo de la marca. */}
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-borde bg-papel px-4 py-3">
         <Marca />
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex w-full shrink-0 items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
           <span className="hidden text-xs text-tinta-suave xl:block">
             Claude Opus 5
           </span>
           <SelectorIdioma />
-          <button
-            onClick={descargarResumen}
-            disabled={exportando || (graph.nodes.length === 0 && messages.length === 0)}
-            className="flex shrink-0 items-center gap-1.5 rounded-medio bg-azul px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-azul-hondo disabled:opacity-40"
-          >
-            {exportando ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {/* En un telefono el rotulo no cabe al lado de la marca: queda el icono. */}
-            <span className="hidden sm:inline">{tx.cabecera.resumen}</span>
-            <span className="sr-only sm:hidden">{tx.cabecera.resumen}</span>
-          </button>
-          <Apoyo />
+          {/* Las descargas, numeradas y en orden: [1] es la que permite volver a la
+              conversacion. Un estudiante bajo solo el PDF y perdio 87 ideas. */}
+          <BotonDescarga numero={1} texto={tx.cabecera.xml} titulo={tx.cabecera.xmlTitulo}
+            onClick={guardarSesion} disabled={!hayAlgo} destacado />
+          <BotonDescarga numero={2} texto={tx.cabecera.png} titulo={tx.cabecera.pngTitulo}
+            onClick={descargarPng} disabled={graph.nodes.length === 0} />
+          <BotonDescarga numero={3} texto={tx.cabecera.resumen} titulo={tx.cabecera.resumenTitulo}
+            onClick={descargarResumen} disabled={exportando || !hayAlgo} cargando={exportando} />
+          <Apoyo numero={4} />
         </div>
       </header>
 
@@ -372,5 +378,37 @@ export default function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+/** Un boton de descarga de la cabecera: numero, icono de descarga y rotulo. */
+function BotonDescarga({
+  numero, texto, titulo, onClick, disabled, cargando = false, destacado = false,
+}: {
+  numero: number; texto: string; titulo: string; onClick: () => void;
+  disabled?: boolean; cargando?: boolean; destacado?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={titulo}
+      className={`flex shrink-0 items-center gap-1.5 rounded-medio px-2.5 py-2 text-xs font-semibold transition-colors disabled:opacity-40 ${
+        destacado
+          ? 'bg-azul text-white hover:bg-azul-hondo'
+          : 'bg-white text-azul-hondo ring-1 ring-azul/40 hover:bg-azul/5'
+      }`}
+    >
+      <span
+        className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
+          destacado ? 'bg-white text-azul' : 'bg-azul text-white'
+        }`}
+      >
+        {numero}
+      </span>
+      {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+      <span className="hidden md:inline">{texto}</span>
+      <span className="sr-only md:hidden">{texto}</span>
+    </button>
   );
 }
