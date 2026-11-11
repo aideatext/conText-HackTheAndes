@@ -73,11 +73,11 @@ foto / PDF / txt ──POST /api/material──► MIME real → bloque image|do
                                          Claude (visión / PDF nativo)                    claude-opus-5
                                          → resumen + nodos origin=material                ▲
                                          guarda el archivo ──────────────────────────► Blob Storage
-chat o dictado ────POST /api/turn ─────► 1) tutor socrático en streaming  ────────────────┤  (7 días)
+chat o dictado ────POST /api/turn ─────► 1) tutor socrático en streaming  ────────────────┤  (1 hora) 
    (SSE)                                 2) extractor del grafo (JSON validado con zod) ──┘
    ◄── token… | graph_delta | metrics    3) fusiona, calcula métricas y persiste ───────► Table Storage
 "el tutor habla" ──POST /api/voz ──────► SSML → es-PE-CamilaNeural ──────────────────► AI Speech
-GET  /api/session/:id        (reanudar)                                                    (7 días)
+GET  /api/session/:id        (reanudar)                                                    (1 hora) 
 POST /api/session/retomar    (volver desde el JSON que te llevaste)
 DEL  /api/session/:id        (borrar todo, ahora)
 POST /api/qatom/grafo        (lo que conText vende: texto → grafo, por llamada)
@@ -133,7 +133,7 @@ conText guarda lo mínimo y lo dice sin letra chica, en la propia pantalla:
 - **Retomar** vuelve a abrir ese JSON donde lo dejaste. El grafo se revalida al entrar con el mismo
   zod que valida al modelo: es un archivo que viene de fuera y no se confía en él.
 - **Borrar todo** elimina del servidor la conversación, el grafo y el archivo, en el momento.
-- Lo que no se borra a mano **caduca solo a los 7 días**: las sesiones por un barrido periódico, los
+- Lo que no se borra a mano **caduca solo a la hora (antes 7 días; cambio del 2026-11-10)**: las sesiones por un barrido periódico, los
   archivos por una regla de ciclo de vida del propio Blob Storage. Sin caducidad, "el servidor
   olvida" sería mentira para quien se va sin pulsar el botón.
 
