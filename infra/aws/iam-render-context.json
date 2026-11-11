@@ -1,0 +1,18 @@
+{
+  "Comment": "Permisos MINIMOS del usuario IAM que usa conText en Render (context-render). Solo su tabla y su carpeta del bucket.",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "LasSesiones",
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem", "dynamodb:Scan"],
+      "Resource": "arn:aws:dynamodb:us-east-1:202906064118:table/context-sessions"
+    },
+    {
+      "Sid": "ElMaterialDelEstudiante",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::context-materiales-202906064118/materiales/*"
+    }
+  ]
+}

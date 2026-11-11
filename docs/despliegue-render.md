@@ -49,6 +49,17 @@ El puerto no se configura: Render pasa su `PORT` y el servidor lo lee.
 
 Ninguna `AZURE_*` y ninguna `ANTHROPIC_ENTRA_AUDIENCE`.
 
+**Persistencia en AWS (2026-11-11)** — para que un despliegue o un reinicio NO borre las sesiones:
+
+| Nombre | Valor |
+|---|---|
+| `DYNAMODB_TABLE` | `context-sessions` (us-east-1, bajo demanda, TTL `expiraEn` = 1 hora) |
+| `S3_BUCKET` | `context-materiales-202906064118` (privado, cifrado, `materiales/` se borra al día) |
+| `AWS_REGION` | `us-east-1` |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Del usuario IAM `context-render`, con **sólo** la política `infra/aws/iam-render-context.json` |
+
+Sin estas variables conText sigue funcionando, en memoria.
+
 > **La clave sólo vive en Render.** Ni en el repo, ni en la imagen, ni en un chat. El workspace
 > `context-demo` lleva **límite de gasto**: es una demo abierta y los créditos se acaban. Si la
 > clave se filtra, se revoca en la Console y se pega una nueva en Render.
